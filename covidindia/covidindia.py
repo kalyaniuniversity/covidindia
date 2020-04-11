@@ -1,0 +1,783 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Mar 31 15:24:51 2020
+
+@author: Dripta Senapati
+
+"""
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from datetime import datetime,timedelta
+import urllib, json
+
+
+class initializer():
+    def __init__(self):
+        '''
+        This is a class that will scrap the data from source upto the previous day of
+        day of using that package.
+
+        Returns
+        -------
+        None.
+
+        '''
+        print('Initializing.......')
+        self.dataList=[]
+        self.dataList_2=[]
+        print('Scraping Raw data....')
+        
+        self.csv_Confirmed=pd.read_csv("https://raw.githubusercontent.com/kalyaniuniversity/COVID-19-Datasets/master/India%20Statewise%20Confirmed%20Cases/COVID19_INDIA_STATEWISE_TIME_SERIES_CONFIRMED.csv")
+        self.csv_recovered=pd.read_csv('https://raw.githubusercontent.com/kalyaniuniversity/COVID-19-Datasets/master/India%20Statewise%20Recovery%20Cases/COVID19_INDIA_STATEWISE_TIME_SERIES_RECOVERY.csv')
+        self.csv_Death=pd.read_csv('https://raw.githubusercontent.com/kalyaniuniversity/COVID-19-Datasets/master/India%20Statewise%20Death%20Cases/COVID19_INDIA_STATEWISE_TIME_SERIES_DEATH.csv')
+        column_dict={i:j for j,i in enumerate(self.csv_Confirmed.columns)}
+        self.code=pd.Series(list(self.csv_Confirmed['STATE/UT'][:-1]),index=list(self.csv_Confirmed['CODE'][:-1]))
+        self.count_conf=pd.concat([self.csv_Confirmed['STATE/UT'],self.csv_Confirmed['1/30/2020'],self.csv_Confirmed.iloc[:,column_dict['1/30/2020']:].diff(axis=1).dropna(axis=1)],axis=1)
+        self.count_recover=pd.concat([self.csv_recovered['STATE/UT'],self.csv_recovered['1/30/2020'],self.csv_recovered.iloc[:,column_dict['1/30/2020']:].diff(axis=1).dropna(axis=1)],axis=1)
+        self.count_death=pd.concat([self.csv_Death['STATE/UT'],self.csv_Death['1/30/2020'],self.csv_Death.iloc[:,column_dict['1/30/2020']:].diff(axis=1).dropna(axis=1)],axis=1)
+        print('All Scraping done \n converting in Dataframes')
+        print('All setup done.')
+        print('############################################################')
+        print(f'\t\t\tOverview:-(upto {self.csv_Confirmed.columns[-1]})')
+        print('Confirmed:',self.csv_Confirmed[self.csv_Confirmed.columns[-1]].tolist()[-1],'\tRecoverd:',self.csv_recovered[self.csv_recovered.columns[-1]].tolist()[-1],'\t\tDeceased:',self.csv_Death[self.csv_Death.columns[-1]].tolist()[-1])
+        print('############################################################')
+        
+    #call this method to see all collected datasets 
+    #it returns a list of dataframes
+    def show_data(self):
+        '''
+        This method only assembles the collected data 
+
+        Returns
+        -------
+        list
+            returns collected data as 3 dataframe format.
+
+        '''
+        return [self.csv_Confirmed,self.csv_recovered,self.csv_Death]
+   
+class Demographic_overview():
+    def __init__(self):
+        '''
+        This Demographic_overview class has the power of filtering in terms of state,
+        district,city,date or range of date
+
+        Returns
+        -------
+        None.
+
+        '''
+        print('Collecting Data.....')
+        json_url = urllib.request.urlopen('https://api.covid19india.org/raw_data.json')
+        data = json.loads(json_url.read())
+        df=pd.DataFrame(data['raw_data'])
+        df=df.replace('','Unknown')
+        df=df[(df['dateannounced']!='Unknown') & (df['dateannounced'] != datetime.strftime(datetime.now(),'%d/%m/%Y'))]
+        index=[]
+        for i in df.dateannounced:
+            if i!= 'Unknown':
+                index.append(datetime.strptime(i,'%d/%m/%Y'))
+            else:
+                index.append('Unknown')
+        df.dateannounced=index
+        self.raw=df
+    def demograpy(self):
+        '''
+        This method of Demographic_overview class will let the user to input the desired state,
+        district,city and date or range of date.
+        You call type 'all' for categories to filter.
+        For Example: if district is choosen 'all' then it will return all dates available in that district.
+        to set a range of date simple type to dates separated by '-'.
+        e.g 2/3/2020-5/4/2020
+        First state be the input. if state is 'all' then no district will no prompt to choose,
+        Similarly if district is choosen 'all' no prompt will come to choose city.
+        dates may also be 'all'
+        Returns
+        -------
+        DataFrame
+            returns a dataframe having all confirmed cases separated with 'male' 'female' 'Unknown'
+            'Unknown' means the gender of the confirmed person is not known or data not available.
+            If wrong input is passed no data will be shown ..dataframe will be blank.Sometimes if for particular
+            filter there is no data available it will also create blank dataframe.
+        '''
+        statelist=np.unique([i for i in self.raw['detectedstate']])
+        print(statelist)
+        state=input('Select a state from above list:')
+        d={}
+        if state=='all':
+            datelist=np.unique([datetime.strftime(i,'%d/%m/%Y') for i in self.raw['dateannounced']])
+            print(datelist)
+            date=input('Select a date or range of date from above list:')
+            dateDict=dict(tuple(self.raw.groupby('dateannounced')))
+            if date=='all':
+                for key in dateDict.keys():
+                    count=dateDict[key]['gender'].value_counts()
+                    d[datetime.strftime(key,'%d/%m/%Y')]=count
+                return pd.DataFrame(d)
+                    
+            else:
+                if '-' not in date:
+                    date=datetime.strptime(date,'%d/%m/%Y')
+                    count=dateDict[date]['gender'].value_counts()
+                    d[datetime.strftime(date,'%d/%m/%Y')]=count
+                    return pd.DataFrame(d)
+                else:
+                    date=date.split('-')
+                    date=[datetime.strptime(i,'%d/%m/%Y') for i in date]
+                    for key in dateDict.keys():
+                        if (key >=date[0]) & (key <=date[1]):
+                            count=dateDict[key]['gender'].value_counts()
+                            d[datetime.strftime(key,'%d/%m/%Y')]=count
+                    return pd.DataFrame(d)
+        else:
+            newdf=self.raw[self.raw['detectedstate']==state]
+            l=np.unique([i for i in newdf['detecteddistrict']])
+            print(l)
+            district=input('Select District from above list:')
+            da=np.unique([datetime.strftime(i,'%d/%m/%Y') for i in newdf['dateannounced']])
+            if district=='all':
+                
+                print(da)
+                date=input('select a date or range of date from above list:')
+                dateDict=dict(tuple(newdf.groupby('dateannounced')))
+                if date == 'all':
+                    
+                    for key in dateDict.keys():
+                        count=dateDict[key]['gender'].value_counts()
+                        d[datetime.strftime(key,'%d/%m/%Y')]=count
+                    return pd.DataFrame(d)
+                else:
+                    if '-' not in date:
+                        date=datetime.strptime(date,'%d/%m/%Y')
+                        count=dateDict[date]['gender'].value_counts()
+                        d[datetime.strftime(date,'%d/%m/%Y')]=count
+                        return pd.DataFrame(d)
+                    else:
+                        date=date.split('-')
+                        date=[datetime.strptime(i,'%d/%m/%Y') for i in date]
+                        for key in dateDict.keys():
+                            if (key >=date[0]) & (key <=date[1]):
+                                count=dateDict[key]['gender'].value_counts()
+                                d[datetime.strftime(key,'%d/%m/%Y')]=count
+                        return pd.DataFrame(d)
+            else:
+                dis=newdf[newdf['detecteddistrict']==district]
+                citylist=np.unique([i for i in dis['detectedcity']])
+                print(citylist)
+                city=input('Enter a city from the above list:')
+                if city == 'all':
+                    timelist=np.unique([datetime.strftime(i,'%d/%m/%Y') for i in dis['dateannounced']])
+                    print(timelist)
+                    date=input('select date or range of date from above:')
+                    dateDict=dict(tuple(dis.groupby('dateannounced')))
+                    if date == 'all':
+                        for key in dateDict.keys():
+                            count=dateDict[key]['gender'].value_counts()
+                            d[datetime.strftime(key,'%d/%m/%Y')]=count
+                        return pd.DataFrame(d)
+                    else:
+                        if '-' not in date:
+                            date=datetime.strptime(date,'%d/%m/%Y')
+                            count=dateDict[date]['gender'].value_counts()
+                            d[datetime.strftime(date,'%d/%m/%Y')]=count
+                            return pd.DataFrame(d)
+                        else:
+                            date=date.split('-')
+                            date=[datetime.strptime(i,'%d/%m/%Y') for i in date]
+                            for key in dateDict.keys():
+                                if (key >=date[0]) & (key <=date[1]):
+                                    count=dateDict[key]['gender'].value_counts()
+                                    d[datetime.strftime(key,'%d/%m/%Y')]=count
+                            return pd.DataFrame(d)
+                else:
+                    citydf=dis[dis['detectedcity']==city]
+                    timelist=np.unique([datetime.strftime(i,'%d/%m/%Y') for i in citydf['dateannounced']])
+                    dateDict=dict(tuple(citydf.groupby('dateannounced')))
+                    print(timelist)
+                    date=input('Select any date from above list:')
+                    if date == 'all':
+                        for key in dateDict.keys():
+                            count=dateDict[key]['gender'].value_counts()
+                            d[datetime.strftime(key,'%d/%m/%Y')]=count
+                        return pd.DataFrame(d)
+                    elif '-' not in date:
+                        date=datetime.strptime(date,'%d/%m/%Y')
+                        count=dateDict[date]['gender'].value_counts()
+                        d[datetime.strftime(date,'%d/%m/%Y')]=count
+                        return pd.DataFrame(d)
+                    else:
+                        date=date.split('-')
+                        date=[datetime.strptime(i,'%d/%m/%Y') for i in date]
+                        for key in dateDict.keys():
+                            if (key >=date[0]) & (key <=date[1]):
+                                count=dateDict[key]['gender'].value_counts()
+                                d[datetime.strftime(key,'%d/%m/%Y')]=count
+                        return pd.DataFrame(d)
+        
+        
+        
+        
+        
+        
+
+#Data class can apply various filters on collected datasets(Confirmed,Recovered,Deceased)
+#based on User's choice        
+class Data(initializer):
+    def __init__(self,init):
+        self.csv_Confirmed=init.csv_Confirmed
+        self.csv_recovered=init.csv_recovered
+        self.csv_Death=init.csv_Death
+        self.count_conf=init.count_conf
+        self.count_recover=init.count_recover
+        self.count_death=init.count_death
+        self.code=init.code
+    def __Dataset(self,date,confirmed,recovered,death):
+    
+        new=confirmed[['STATE/UT',date]]
+        new=pd.concat([new,recovered[date],death[date]],axis=1)
+        new.columns=['State','Total Confirmed','Total Recovered','Total Death']
+        return new
+        
+    def get_dataset_state(self,state='Whole'):
+        '''
+        this method of Data class will allow user to get cumulative counts of a particular 
+        state.
+
+        Parameters
+        ----------
+        state : character, optional
+            name of state in India. The default is 'Whole'.
+
+        Returns
+        -------
+        df : DataFrame
+            if state is whole then it Returns a dataframe consisting all states having 
+            cumulative count of totalconfirmed,total recovered,total death till the previous day of the day of using this package.
+            if state is mentioned then it will return a dataframe consisting the names
+            of districts with total cumultive counts of confirmed only
+
+        '''
+        if state=='Whole':
+            df=pd.concat([self.csv_Confirmed[['STATE/UT','CODE',self.csv_Confirmed.columns[-1]]],
+                      self.csv_recovered[self.csv_recovered.columns[-1]],self.csv_Death[self.csv_Death.columns[-1]]],axis=1)
+            df.columns=['STATE/UT','CODE','Total Confirmed','Total Recovered','Total Death']
+            return df
+        else:
+            try:
+                try:
+                    state=self.code[state]
+                except:
+                    state=state
+                flag=0
+                json_url = urllib.request.urlopen('https://api.covid19india.org/v2/state_district_wise.json')
+                data=json.loads(json_url.read())
+                for i in data:
+                    if i['state']==state.title():
+                        flag=1
+                        df=pd.DataFrame(i['districtData'])
+                        df=df.iloc[:,:2]
+                        return df
+                        break
+                if flag==0:    
+                    print('No Confirmed Data in',state.title())
+            except:
+                print('No such states/state code')
+            
+    def get_dataset_by_date(self,date):
+        '''
+        This method of Data Class will allow user to get cumulative count of all states of
+        total confirmed,total death and total recovered
+        India for a particular given date
+
+        Parameters
+        ----------
+        date : character
+            Should be in dd/mm/yyyy format.
+
+        Returns
+        -------
+        df : Dataframe
+            Dataframe consisting all cumulative values of total confirmed,total recovered,total
+            death for a given date.
+
+        '''
+        date='{d.month}/{d.day}/{d.year}'.format(d=datetime.strptime(date, '%d/%m/%Y'))
+        df=self.__Dataset(date,self.csv_Confirmed,self.csv_recovered,self.csv_Death)
+        return df
+    
+    
+    def get_cum_dataset_between_date(self,startDate,endDate,by):
+        '''
+        This method of Data class will give cumulative counts between two given dates
+        for all states 
+
+        Parameters
+        ----------
+        startDate : character
+            date format dd/mm/yyyy.
+        endDate : character
+            date format dd/mm/yyyy.
+        by : character
+            'Total Confirmed' or 'Total Recovered' or 'Total Death'.
+
+        Raises
+        ------
+        Exception
+            startdate should be less than endDate---if not it will raise exception.
+
+        Returns
+        -------
+        df : Dataframe
+            returns a dataframe of cumulative counts between two dates for all states by
+            'Total Confirmed' or 'Total Recovered' or 'Total Death'.
+
+        '''
+        dateDict={i:j for j,i in enumerate(self.csv_Confirmed.columns)}
+        if datetime.strptime(startDate, '%d/%m/%Y') < datetime.strptime(endDate, '%d/%m/%Y'):
+            start='{d.month}/{d.day}/{d.year}'.format(d=datetime.strptime(startDate, '%d/%m/%Y'))
+            end='{d.month}/{d.day}/{d.year}'.format(d=datetime.strptime(endDate, '%d/%m/%Y'))
+            if by.lower() == 'total confirmed':
+                df=self.csv_Confirmed.iloc[:,dateDict[start]:dateDict[end]+1]
+                df=pd.concat([self.csv_Confirmed['STATE/UT'],df],axis=1)
+            elif by.lower() == 'total recovered':
+                df=self.csv_recovered.iloc[:,dateDict[start]:dateDict[end]+1]
+                df=pd.concat([self.csv_recovered['STATE/UT'],df],axis=1)
+            elif by.lower() == 'total death':
+                df=self.csv_Death.iloc[:,dateDict[start]:dateDict[end]+1]
+                df=pd.concat([self.csv_Death['STATE/UT'],df],axis=1)
+            return df
+        else:
+            raise Exception('Startdate must be less than EndDate')
+            
+    def get_count_between_date(self,startDate,endDate,by):
+        '''
+        Gives daily count data for all states between two dates
+
+        Parameters
+        ----------
+        startDate : character
+            date format dd/mm/yyyy
+        endDate : character
+            date format dd/mm/yyyy.
+        by : character
+            'Total Confirmed' or 'Total Recovered' or 'Total Death'.
+
+        Raises
+        ------
+        Exception
+            Startdate must be less than enddate.If not it raise anexception.
+            it also raise error for wrong input in by parameter.
+
+        Returns
+        -------
+        df : DataFrame
+            DataFrame consisting daily counts for between two given dates
+            for given by parameter.
+
+        '''
+        dateDict={i:j for j,i in enumerate(self.count_conf.columns)}
+        if datetime.strptime(startDate, '%d/%m/%Y') < datetime.strptime(endDate, '%d/%m/%Y'):
+            start='{d.month}/{d.day}/{d.year}'.format(d=datetime.strptime(startDate, '%d/%m/%Y'))
+            end='{d.month}/{d.day}/{d.year}'.format(d=datetime.strptime(endDate, '%d/%m/%Y'))
+        
+            try:
+                if by.lower()=='total death':
+                    df=self.count_death.iloc[:,dateDict[start]:dateDict[end]+1]
+                    df=pd.concat([self.count_death['STATE/UT'],df],axis=1)
+                elif by.lower()=='total recovered':
+                    df=self.count_recover.iloc[:,dateDict[start]:dateDict[end]+1]
+                    df=pd.concat([self.count_recover['STATE/UT'],df],axis=1)
+                elif by.lower() == 'total confirmed':
+                    df=self.count_conf.iloc[:,dateDict[start]:dateDict[end]+1]
+                    df=pd.concat([self.count_conf['STATE/UT'],df],axis=1)
+                return df
+            except:
+                raise Exception('by Argument must be "total death" or "total recovered" or "total confirmed"')
+        else:
+            raise Exception('Startdate must be less than EndDate')
+            
+    
+    def get_count_by_date(self,date,by):
+        '''
+        Gives the daily counts for given by parameter for all states for that given date.
+
+        Parameters
+        ----------
+        date : character
+            date format dd/mm/yyyy.
+        by : character
+            'Confirmed' or 'Recovered' or 'Death'.
+
+        Raises
+        ------
+        Exception
+            Year must be 2020 and startdate is less than enddate.Otherwise it will raise Exception.
+
+        Returns
+        -------
+        df : DataFrame
+            Dataframe consisting all daily counts for a given date for given by parameter.
+
+        '''
+        if '{d.year}'.format(d=datetime.strptime(date, '%d/%m/%Y')) == '2020':
+            date='{d.month}/{d.day}/{d.year}'.format(d=datetime.strptime(date, '%d/%m/%Y'))
+            
+            try:
+                if by.lower()=='death':
+                    df=self.count_death[date]
+                    df=pd.concat([self.count_death['STATE/UT'],df],axis=1)
+                elif by.lower()=='recovered':
+                    df=self.count_recover[date]
+                    df=pd.concat([self.count_recover['STATE/UT'],df],axis=1)
+                elif by.lower()=='confirmed':
+                    df=self.count_conf[date]
+                    df=pd.concat([self.count_conf['STATE/UT'],df],axis=1)
+                return df
+            except:
+                raise Exception('by Argument must be "death" or "recovered" or "confirmed"')
+        else:
+            raise Exception('Year must be 2020')
+
+     
+    def rank(self,num,by,kind='top',cummulative=False,date=None):
+        '''
+        Gives top n or bottom n values as cumulative or daily basis for a date or
+        combining whole dates filtered with by parameter.
+
+        Parameters
+        ----------
+        num : integer
+            number of rows user want to see.
+            e.g num=10 -> top/bottom 10 data will be shown
+        by : character
+            'Total Confirmed' or 'Total Recovered' or 'Total Death'.
+        kind : character, optional
+            'top' or 'bottom' by which data will be filtered. The default is 'top'.
+        cummulative : bool, optional
+           if True it will show cumulative counts. The default is False.
+        date : character, optional
+            (must be in dd/mm/yyyy format)if date is given then method will return cumulative or daily count
+            for that date. The default is None.
+            if None it will return all cumulative/daily counts 
+        Raises
+        ------
+        Exception
+            if date is None and cumulative is false then it is not possible to show
+            data for top n or botom n rows.
+
+        Returns
+        -------
+        sort : DataFrame
+            Dataframe consists of top/bottom(=num) rows as cumulative/daily data for a given date
+            or all together dates for a given by parameter.
+
+        '''
+        if date != None:
+            if cummulative==True:
+                try:
+                    df=self.get_dataset_by_date(date)
+                    df=df.iloc[:-1,:].sort_values(by=by.title(),ascending=False)
+                    if kind == 'top':
+                        sort=df.head(num)
+                    elif kind =='bottom':
+                        sort=df.tail(num)
+                    return sort
+                except:
+                    raise Exception('Check date or by parameter')
+            else:
+                try:
+                    df=self.get_count_by_date(date,by.split(' ')[1])
+                    df=df.iloc[:-1,:].sort_values(by=df.columns[1],ascending=False)
+                    if kind == 'top':
+                        sort=df.head(num)
+                    elif kind =='bottom':
+                        sort=df.tail(num)
+                    return sort
+                except:
+                    raise Exception('Check date or by parameter')
+        else:
+            if cummulative==True:
+                try:
+                    df=self.get_dataset_state()
+                    df=df.iloc[:-1,:].sort_values(by=by.title(),ascending=False)
+                    if kind == 'top':
+                        sort=df.head(num)
+                    elif kind =='bottom':
+                        sort=df.tail(num)
+                    return sort
+                except:
+                    raise Exception('Check date or by parameter')
+            else:
+                raise Exception('Cannot gather information of daily count without date')
+        
+#defing visualizer class that contains the methods of plotting colleted data         
+        
+        
+class visualizer(initializer):
+    def __init__(self,init):
+        '''
+        Gather all information to perform the visualization
+
+        Parameters
+        ----------
+        init : TYPE
+            None.
+
+        Returns
+        -------
+        None.
+
+        '''
+        self.csv_Confirmed=init.csv_Confirmed
+        self.csv_recovered=init.csv_recovered
+        self.csv_Death=init.csv_Death
+        self.count_conf=init.count_conf
+        self.count_recover=init.count_recover
+        self.count_death=init.count_death
+        self.code=init.code
+        column_dict={i:j for j,i in enumerate(self.csv_Confirmed.columns)}
+        count_dict={i:j for j,i in enumerate(self.count_conf.columns)}
+        self.date=pd.Series(self.csv_Confirmed.columns[column_dict['1/30/2020']:])
+        self.confirmed=pd.Series(self.csv_Confirmed[self.csv_Confirmed['STATE/UT']=='Total'].iloc[:,column_dict['1/30/2020']:].values[0])
+        self.recovered=pd.Series(self.csv_recovered[self.csv_recovered['STATE/UT']=='Total'].iloc[:,column_dict['1/30/2020']:].values[0])
+        self.death=pd.Series(self.csv_Death[self.csv_Death['STATE/UT']=='Total'].iloc[:,column_dict['1/30/2020']:].values[0])
+        self.count_confirmed=pd.Series(self.count_conf[self.count_conf['STATE/UT']=='Total'].iloc[:,count_dict['1/30/2020']:].values[0])
+        self.count_recovered=pd.Series(self.count_recover[self.count_recover['STATE/UT']=='Total'].iloc[:,count_dict['1/30/2020']:].values[0])
+        self.count_Death=pd.Series(self.count_death[self.count_death['STATE/UT']=='Total'].iloc[:,count_dict['1/30/2020']:].values[0])
+    
+    def __graph(self,x,confirmed,recovered,death,date=True):
+        '''
+        A private method used by visualizer class methods to generate 3 subplots graphs
+
+        Parameters
+        ----------
+        x : series-like
+            
+        confirmed : series-like
+            
+        recovered : series-like
+            
+        death : series-like
+            
+        date : bool, optional
+             The default is True.
+
+        Returns
+        -------
+        Generate 3 subplots.
+
+        '''
+        fig, (ax1,ax2,ax3) = plt.subplots(3,1,sharex=False)
+        fig.set_size_inches(18.5, 10.5)
+        df_max=max(confirmed)
+        #print(date)
+        if date != True:
+            x_min=min(x)
+            x_max=max(x)
+            ax1.scatter(x,confirmed, marker='o',color='red',s=[i for i in confirmed],edgecolors='black')
+            ax1.set_ylabel('Confirmed cases',labelpad=20)
+            ax1.yaxis.set_ticks(np.arange(0,df_max,df_max/10))
+            ax1.xaxis.set_ticks(np.arange(x_min,x_max,(x_max-x_min)/10))
+            ax2.scatter(x,recovered,marker='o',color='green',s=[i for i in recovered],edgecolors='black')
+            ax2.yaxis.set_ticks(np.arange(0,df_max,df_max/10.))
+            ax2.xaxis.set_ticks(np.arange(x_min,x_max,(x_max-x_min)/10))
+            ax2.set_ylabel('Total recovered',labelpad=20)
+            ax3.scatter(x,death,marker='o',color='blue',s=[i for i in death],edgecolors='black')
+            ax3.yaxis.set_ticks(np.arange(0,df_max,df_max/10))
+            ax3.set_ylabel('Total deceased',labelpad=20)
+            ax3.xaxis.set_ticks(np.arange(x_min,x_max,(x_max-x_min)/10))
+            ax3.set_xlabel('Latitude',labelpad=20)
+        else:
+            ax1.plot(x,confirmed, marker='*',color='red')
+            ax1.set_ylabel('Confirmed cases',labelpad=20)
+        #ax2.set_title('Confirmed cases')
+            ax2.plot(x,recovered,marker='*',color='green')
+            
+            ax2.set_ylabel('Total recovered',labelpad=20)
+            ax3.plot(x,death,marker='*',color='blue')
+            if df_max != 0:
+                ax2.yaxis.set_ticks(np.arange(0,df_max,df_max/10))
+                ax3.yaxis.set_ticks(np.arange(0,df_max,df_max/10))
+            ax3.set_ylabel('Total deceased',labelpad=20)
+        #ax[1][0].set_ybound(0,1500)
+            '''ax[1][0].set_title('Recovered cases')
+            ax[2][0].plot(dateseries_dead)
+            ax[2][0].set_title('Dead cases')'''
+            fig.autofmt_xdate()
+            
+        plt.show()
+    
+   
+    def whole(self,daily=False):
+        '''
+        Generate 3 subplots of whole collected data 
+
+        Parameters
+        ----------
+        daily : bool, optional
+            if True garph will be plotted on daily counts otherwise on cumulative counts. The default is False.
+
+        Returns
+        -------
+        3 subplots consisting date vs total confirmed,date vs total recovered,date vs total deceased.
+        may be daily or cumulative based on daily parameter passed.
+
+        '''
+        if daily == True:
+            self.__graph(self.date,self.count_confirmed,self.count_recovered,self.count_Death)
+        else:
+            self.__graph(self.date,self.confirmed,self.recovered,self.death)
+            
+    
+    def tail(self,num,daily=False):
+        '''
+        Gives graphical visualization of latest n(=num) dayes based on daily or cumulative data
+
+        Parameters
+        ----------
+        num : integer
+            setd the number of latest dates user wants to see.
+        daily : bool, optional
+            if true graph is plotted based on daily data. The default is False.
+
+        Returns
+        -------
+        3 subplots consisting date vs total confirmed,date vs total recovered,date vs total deceased.
+        may be daily or cumulative based on daily parameter passed.
+        '''
+        if daily !=False:
+            date=self.date[len(self.date)-num:]
+            confirmed=self.count_confirmed[len(self.count_confirmed)-num:]
+            recovered=self.count_recovered[len(self.count_recovered)-num:]
+            death=self.count_Death[len(self.count_Death)-num:]
+            self.__graph(date,confirmed,recovered,death)
+        else:
+            date=self.date[len(self.date)-num:]
+            confirmed=self.confirmed[len(self.confirmed)-num:]
+            recovered=self.recovered[len(self.recovered)-num:]
+            death=self.death[len(self.death)-num:]
+            self.__graph(date,confirmed,recovered,death)
+    
+    def head(self,num,daily=False):
+        '''
+        Gives graphical visualization of first n(=num) dayes based on daily or cumulative data
+
+        Parameters
+        ----------
+        num : integer
+            setd the number of dates from start user wants to see.
+        daily : bool, optional
+            if true graph is plotted based on daily data. The default is False.
+
+        Returns
+        -------
+        3 subplots consisting date vs total confirmed,date vs total recovered,date vs total deceased.
+        may be daily or cumulative based on daily parameter passed.
+
+        '''
+        if daily != False:
+            date=self.date[:num]
+            confirmed=self.count_confirmed[:num]
+            recovered=self.count_recovered[:num]
+            death=self.count_Death[:num]
+            self.__graph(date,confirmed,recovered,death)
+        else:
+            date=self.date[:num]
+            confirmed=self.confirmed[:num]
+            recovered=self.recovered[:num]
+            death=self.death[:num]
+            self.__graph(date,confirmed,recovered,death)
+            
+    def graph_by_date(self,startDate,endDate,state=None,daily=False):
+        '''
+        Gives the visualization of cumulative data or daily data between two given
+        dates for a given state or as whole india.
+
+        Parameters
+        ----------
+        startDate : character
+            dd/mm/yyyy format(e.g 02/04/2020).
+        endDate : character
+            dd/mm/yyyy format(e.g 02/04/2020).
+        state : character, optional
+            for which state graph will be plotted.If None graph will be plotted for whole india. The default is None.
+            states input also takes state codes.
+        daily : bool, optional
+            if True graph will plotted daily basis. The default is False.
+
+        Raises
+        ------
+        Exception
+            startdate must be less than enddate and if states are given wrong it will raise exception.
+
+        Returns
+        -------
+        3 subplots consisting date vs total confirmed,date vs total recovered,date vs total deceased for a state or whole india
+        between two dates.
+        may be daily or cumulative based on daily parameter passed.
+
+        '''
+        column_dict={i:j for j,i in enumerate(self.csv_Confirmed.columns)}
+        count_dict={i:j for j,i in enumerate(self.count_conf.columns)}
+        if datetime.strptime(startDate, '%d/%m/%Y') < datetime.strptime(endDate, '%d/%m/%Y'):
+            start='{d.month}/{d.day}/{d.year}'.format(d=datetime.strptime(startDate, '%d/%m/%Y'))
+            end='{d.month}/{d.day}/{d.year}'.format(d=datetime.strptime(endDate, '%d/%m/%Y'))
+        
+            if state != None:
+                try:
+                    try:
+                        state=self.code[state]
+                    except:
+                        state=state
+                    if daily == False:
+                        
+                        date=self.date[self.date[self.date==start].index[0]:self.date[self.date==end].index[0]+1]
+                        confirmed=pd.Series(self.csv_Confirmed[self.csv_Confirmed['STATE/UT']==state.title()].iloc[:,column_dict[start]:column_dict[end]+1].values[0])
+                        recovered=pd.Series(self.csv_recovered[self.csv_Confirmed['STATE/UT']==state.title()].iloc[:,column_dict[start]:column_dict[end]+1].values[0])
+                        death=pd.Series(self.csv_Death[self.csv_Death['STATE/UT']==state.title()].iloc[:,column_dict[start]:column_dict[end]+1].values[0])
+                        self.__graph(date,confirmed,recovered,death)
+                    else:
+                        
+                        date=self.date[self.date[self.date==start].index[0]:self.date[self.date==end].index[0]+1]
+                        confirmed=pd.Series(self.count_conf[self.count_conf['STATE/UT']==state.title()].iloc[:,count_dict[start]:count_dict[end]+1].values[0])
+                        recovered=pd.Series(self.count_recover[self.count_recover['STATE/UT']==state.title()].iloc[:,count_dict[start]:count_dict[end]+1].values[0])
+                        death=pd.Series(self.count_death[self.count_death['STATE/UT']==state.title()].iloc[:,count_dict[start]:count_dict[end]+1].values[0])
+                        self.__graph(date,confirmed,recovered,death)
+                except:
+                    raise Exception('No such state or state code')
+            else:
+                if daily == False:
+                    
+                    date=self.date[self.date[self.date==start].index[0]:self.date[self.date==end].index[0]+1]
+                    confirmed=self.confirmed[self.date[self.date==start].index[0]:self.date[self.date==end].index[0]+1]
+                    recovered=self.recovered[self.date[self.date==start].index[0]:self.date[self.date==end].index[0]+1]
+                    death=self.death[self.date[self.date==start].index[0]:self.date[self.date==end].index[0]+1]
+                    self.__graph(date,confirmed,recovered,death)
+                else:
+                    
+                    date=self.date[self.date[self.date==start].index[0]:self.date[self.date==end].index[0]+1]
+                    confirmed=self.count_confirmed[self.date[self.date==start].index[0]:self.date[self.date==end].index[0]+1]
+                    recovered=self.count_recovered[self.date[self.date==start].index[0]:self.date[self.date==end].index[0]+1]
+                    death=self.count_Death[self.date[self.date==start].index[0]:self.date[self.date==end].index[0]+1]
+                    self.__graph(date,confirmed,recovered,death)
+        else:
+            raise Exception('Startdate should be less than Enddate')
+                    
+    def plot_by_latitude(self):
+        '''
+        Gives the visualization of counts with respect to state latitudes
+
+        Returns
+        -------
+        3 subplots consisting latitude vs latitude confirmed,latitudes vs total recovered,latitudes vs total deceased.
+
+        '''
+        newConf=self.csv_Confirmed.sort_values(by=['LATITUDE'])
+        newRec=self.csv_recovered.sort_values(by=['LATITUDE'])
+        newDeath=self.csv_Death.sort_values(by=['LATITUDE'])
+        latitude=newConf['LATITUDE'][:-1]
+        confirmed=newConf[newConf.columns[-1]][:-1]
+        recovered=newRec[newRec.columns[-1]][:-1]
+        death=newDeath[newDeath.columns[-1]][:-1]
+        self.__graph(latitude,confirmed,recovered,death,date=False)
