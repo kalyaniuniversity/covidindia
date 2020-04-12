@@ -2,7 +2,7 @@
 """
 Created on Tue Mar 31 15:24:51 2020
 
-@author: Dripta Senapati
+@author: Dripta
 
 """
 import pandas as pd
@@ -82,6 +82,7 @@ class Demographic_overview():
                 index.append('Unknown')
         df.dateannounced=index
         self.raw=df
+        print('All Done.')
     def demograpy(self):
         '''
         This method of Demographic_overview class will let the user to input the desired state,
@@ -781,3 +782,9 @@ class visualizer(initializer):
         recovered=newRec[newRec.columns[-1]][:-1]
         death=newDeath[newDeath.columns[-1]][:-1]
         self.__graph(latitude,confirmed,recovered,death,date=False)
+        
+        
+        
+        
+        
+        
