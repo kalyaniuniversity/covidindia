@@ -300,9 +300,9 @@ class Data(initializer):
                         return df
                         break
                 if flag == 0:
-                    print('No Confirmed Data in', state.title())
+                    raise Exception('No Confirmed Data in', state.title())
             except:
-                print('No such states/state code')
+                raise Exception('No such states/state code')
 
     def get_dataset_by_date(self, date):
         '''
