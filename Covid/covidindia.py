@@ -25,8 +25,6 @@ class initializer():
 
         '''
         print('Initializing.......')
-        self.dataList = []
-        self.dataList_2 = []
         print('Scraping Raw data....')
 
         self.csv_Confirmed = pd.read_csv(
@@ -300,9 +298,9 @@ class Data(initializer):
                         return df
                         break
                 if flag == 0:
-                    raise Exception('No Confirmed Data in', state.title())
+                    print('No Confirmed Data in', state.title())
             except:
-                raise Exception('No such states/state code')
+                print('No such states/state code')
 
     def get_dataset_by_date(self, date):
         '''
@@ -429,49 +427,63 @@ class Data(initializer):
         else:
             raise Exception('Startdate must be less than EndDate')
 
-    def get_count_by_date(self, date, by):
+    def get_count_by_date(self,by,date=None):
         '''
-        Gives the daily counts for given by parameter for all states for that given date.
+        Gives the daily count of a given date or all dates by 'confirmed' or 'recovered'
+        or 'death'
 
         Parameters
         ----------
-        date : character
-            date format dd/mm/yyyy.
         by : character
             'Confirmed' or 'Recovered' or 'Death'.
+        date : character, optional
+            if date(dd/mm/yyyy) is given count will be shown for that date. The default is None.
 
         Raises
         ------
         Exception
-            Year must be 2020 and startdate is less than enddate.Otherwise it will raise Exception.
+            If by argument is not within above mentioned and if year is not 2020 it will
+            raise an exception.
 
         Returns
         -------
-        df : DataFrame
-            Dataframe consisting all daily counts for a given date for given by parameter.
+        df : dataframe
+            dataframe consisting of counts of given date or all dates for all states .
 
         '''
-        if '{d.year}'.format(d=datetime.strptime(date, '%d/%m/%Y')) == '2020':
-            date = '{d.month}/{d.day}/{d.year}'.format(
-                d=datetime.strptime(date, '%d/%m/%Y'))
-
+        if date != None:
+            if '{d.year}'.format(d=datetime.strptime(date, '%d/%m/%Y')) == '2020':
+                date = '{d.month}/{d.day}/{d.year}'.format(
+                    d=datetime.strptime(date, '%d/%m/%Y'))
+    
+                try:
+                    if by.lower() == 'death':
+                        df = self.count_death[date]
+                        df = pd.concat([self.count_death['STATE/UT'], df], axis=1)
+                    elif by.lower() == 'recovered':
+                        df = self.count_recover[date]
+                        df = pd.concat(
+                            [self.count_recover['STATE/UT'], df], axis=1)
+                    elif by.lower() == 'confirmed':
+                        df = self.count_conf[date]
+                        df = pd.concat([self.count_conf['STATE/UT'], df], axis=1)
+                    return df
+                except:
+                    raise Exception(
+                        'by Argument must be "death" or "recovered" or "confirmed"')
+            else:
+                raise Exception('Year must be 2020')
+        else:
             try:
                 if by.lower() == 'death':
-                    df = self.count_death[date]
-                    df = pd.concat([self.count_death['STATE/UT'], df], axis=1)
-                elif by.lower() == 'recovered':
-                    df = self.count_recover[date]
-                    df = pd.concat(
-                        [self.count_recover['STATE/UT'], df], axis=1)
+                    df=self.count_death
+                elif by.lower() =='recovered':
+                    df=self.count_recover
                 elif by.lower() == 'confirmed':
-                    df = self.count_conf[date]
-                    df = pd.concat([self.count_conf['STATE/UT'], df], axis=1)
+                    df=self.count_conf
                 return df
             except:
-                raise Exception(
-                    'by Argument must be "death" or "recovered" or "confirmed"')
-        else:
-            raise Exception('Year must be 2020')
+                raise Exception('by Argument must be "death" or "recovered" or "confirmed"')
 
     def rank(self, num, by, kind='top', cummulative=False, date=None):
         '''
@@ -492,18 +504,22 @@ class Data(initializer):
         date : character, optional
             (must be in dd/mm/yyyy format)if date is given then method will return cumulative or daily count
             for that date. The default is None.
-            if None it will return all cumulative/daily counts 
+            if None it will return all cumulative/daily counts
+
         Raises
         ------
         Exception
             if date is None and cumulative is false then it is not possible to show
-            data for top n or botom n rows.
+            data for top n or botom n rows..
 
         Returns
         -------
-        sort : DataFrame
-            Dataframe consists of top/bottom(=num) rows as cumulative/daily data for a given date
-            or all together dates for a given by parameter.
+        dataframe/dictionary
+            if date is not given and cummulative is False then it prompt to input state(state code or name)
+            if state is set to 'all' it will return dictionary consisting all states having top/bottom counts
+            otherwise a dataframe for a given state.
+            whenever date is mentioned a dataframe will be returned consisting top/bottom cumulative count or 
+            daily count for that date.
 
         '''
         if date != None:
@@ -545,8 +561,27 @@ class Data(initializer):
                 except:
                     raise Exception('Check date or by parameter')
             else:
-                raise Exception(
-                    'Cannot gather information of daily count without date')
+                state=input('Select a state:')
+                try:
+                    state=self.code[state]
+                except:
+                    state=state
+                d={}
+                try:
+                   count_data=self.get_count_by_date(by=by.split(' ')[1])
+                   count_data=count_data.set_index('STATE/UT').T
+                   for col in count_data.columns:
+                       if kind =='top':
+                           d[col]=count_data[col].sort_values(ascending=False)[:num]
+                       else:
+                           d[col]=count_data[col].sort_values(ascending=False)[-num:]
+                   if state != 'all':
+                       return pd.DataFrame(d[state.title()])
+                   else:
+                       del d['Total']
+                       return d
+                except:
+                    raise Exception('Select correct state')
 
 # defing visualizer class that contains the methods of plotting colleted data
 
