@@ -8,9 +8,9 @@ DESCRIPTION
 
 CLASSES
     builtins.object
-        Demographic_overview
         initializer
             Data
+            Demographic_overview
             visualizer
 
     class Data(initializer)
@@ -192,10 +192,17 @@ CLASSES
      |  __weakref__
      |      list of weak references to the object (if defined)
 
-    class Demographic_overview(builtins.object)
+    class Demographic_overview(initializer)
+     |  Demographic_overview(init)
+     |
+     |  Method resolution order:
+     |      Demographic_overview
+     |      initializer
+     |      builtins.object
+     |
      |  Methods defined here:
      |
-     |  __init__(self)
+     |  __init__(self, init)
      |      This Demographic_overview class has the power of filtering in terms of state,
      |      district,city,date or range of date
      |
@@ -203,26 +210,43 @@ CLASSES
      |      -------
      |      None.
      |
-     |  demograpy(self)
-     |      This method of Demographic_overview class will let the user to input the desired state,
-     |      district,city and date or range of date.
-     |      You call type 'all' for categories to filter.
-     |      For Example: if district is choosen 'all' then it will return all dates available in that district.
-     |      to set a range of date simple type to dates separated by '-'.
-     |      e.g 2/3/2020-5/4/2020
-     |      First state be the input. if state is 'all' then no district will no prompt to choose,
-     |      Similarly if district is choosen 'all' no prompt will come to choose city.
-     |      dates may also be 'all'
+     |  demography(self, place='all', date='all')
+     |      This method can show the male and female count of confirmed cases for a state or a district or
+     |      a city for a given date of range of date.
+     |
+     |      Parameters
+     |      ----------
+     |      place : character, optional
+     |          place can be state or district or city.this method automatically recognize the place
+     |          and gives user data for that place. The default is 'all'.If place is mentioned data for all places
+     |          will be shown.
+     |      date : character, optional
+     |          by which date or range of date the data will be filtered.Date must be dd/mm/yyyy format.
+     |          The default is 'all'.if date is not mentioned data for all dates will be shown
+     |
+     |      Raises
+     |      ------
+     |      Exception
+     |          If no data is found for a date or a place it will raise exceptions.
+     |
      |      Returns
      |      -------
-     |      DataFrame
-     |          returns a dataframe having all confirmed cases separated with 'male' 'female' 'Unknown'
-     |          'Unknown' means the gender of the confirmed person is not known or data not available.
-     |          If wrong input is passed no data will be shown ..dataframe will be blank.Sometimes if for particular
-     |          filter there is no data available it will also create blank dataframe.
+     |      Dataframe
+     |          dataframe consists of male female counts of confirmed cases for given date and place.
      |
      |  ----------------------------------------------------------------------
-     |  Data descriptors defined here:
+     |  Methods inherited from initializer:
+     |
+     |  show_data(self)
+     |      This method only assembles the collected data
+     |
+     |      Returns
+     |      -------
+     |      list
+     |          returns collected data as 3 dataframe format.
+     |
+     |  ----------------------------------------------------------------------
+     |  Data descriptors inherited from initializer:
      |
      |  __dict__
      |      dictionary for instance variables (if defined)
