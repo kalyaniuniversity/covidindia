@@ -16,18 +16,27 @@ As of now, the code is kept open-source directly accessible from this repository
 
 ## Usage
 
-     from Covid.CovidIndia import
+     #import module
+     from Covid.covidindia import *
+
      #Initialize the module to collect the data
      Init=initializer()
+
      #shows the collected data in Dataframe formate
      Init.show_data()
-     obj1=Data(init) #defining the object for Data class
-     cumData=obj1.get_cum_dataset_between_date('30/1/2020','5/4/2020',by='total recovered') #gives the cumulative count between 30/1/2020 and 5/4/2020
-     obj1.rank(10,'Total Confirmed',kind='top',cummulative=True,date='4/3/2020') #gives the top 10 total confirmed cases for date 4/3/2020
-     obj2=Demographic_overview(init) # object for demographic_overview class
-     obj2.demography('Salt Lake','30/1/2020-10/4/2020') #Gives Male and Female counts of confirmed cases for salt lake city in west bengal between 30/1/2020 and 10/4/2020
-     obj3=visualizer(init) #initiazing visualizer class
-     obj3.whole(daily=True) #shows line plot for daily counts of confirmed cases,recovered cases and death cases against date.
+
+     obj1=Data(init)       #defining the object for Data class
+     cumData=obj1.get_cum_dataset_between_date('30/1/2020','5/4/2020',by='total recovered')   #gives the cumulative count between 30/1/2020 and 5/4/2020
+
+     obj1.rank(10,'Total Confirmed',kind='top',cummulative=True,date='4/3/2020')   #gives the top 10 total confirmed cases for date 4/3/2020
+
+     obj2=Demographic_overview(init)     # object for demographic_overview class
+
+     obj2.demography('Salt Lake','30/1/2020-10/4/2020')    #Gives Male and Female counts of confirmed cases for salt lake city in west bengal between 30/1/2020 and 10/4/2020
+
+     obj3=visualizer(init)       #initiazing visualizer class
+
+     obj3.whole(daily=True)       #shows line plot for daily counts of confirmed cases,recovered cases and death cases against date.
 
 ## Examples
 
