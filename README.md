@@ -16,7 +16,7 @@ As of now, the code is kept open-source directly accessible from this repository
 
 ## Usage
 
-> from Covid.CovidIndia import \*
+> from Covid.CovidIndia import
 > #Initialize the module to collect the data
 > Init=initializer()
 > #shows the collected data in Dataframe formate
