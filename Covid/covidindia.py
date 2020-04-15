@@ -14,7 +14,7 @@ import json
 
 
 class initializer():
-    def __init__(self):
+    def __init__(self,silent=False):
         '''
         This is a class that will scrap the data from source upto the previous day of
         day of using that package.
@@ -24,8 +24,9 @@ class initializer():
         None.
 
         '''
-        print('Initializing.......')
-        print('Scraping Raw data....')
+        if silent == False:
+            print('Initializing.......')
+            print('Scraping Raw data....')
 
         self.csv_Confirmed = pd.read_csv(
             "https://raw.githubusercontent.com/kalyaniuniversity/COVID-19-Datasets/master/India%20Statewise%20Confirmed%20Cases/COVID19_INDIA_STATEWISE_TIME_SERIES_CONFIRMED.csv")
@@ -42,13 +43,14 @@ class initializer():
                                         self.csv_recovered.iloc[:, column_dict['1/30/2020']:].diff(axis=1).dropna(axis=1)], axis=1)
         self.count_death = pd.concat([self.csv_Death['STATE/UT'], self.csv_Death['1/30/2020'],
                                       self.csv_Death.iloc[:, column_dict['1/30/2020']:].diff(axis=1).dropna(axis=1)], axis=1)
-        print('All Scraping done \n converting in Dataframes')
-        print('All setup done.')
-        print('############################################################')
-        print(f'\t\t\tOverview:-(upto {self.csv_Confirmed.columns[-1]})')
-        print('Confirmed:', self.csv_Confirmed[self.csv_Confirmed.columns[-1]].tolist()[-1], '\tRecoverd:',
-              self.csv_recovered[self.csv_recovered.columns[-1]].tolist()[-1], '\t\tDeceased:', self.csv_Death[self.csv_Death.columns[-1]].tolist()[-1])
-        print('############################################################')
+        if silent == False:
+            print('All Scraping done \n converting in Dataframes')
+            print('All setup done.')
+            print('############################################################')
+            print(f'\t\t\tOverview:-(upto {self.csv_Confirmed.columns[-1]})')
+            print('Confirmed:', self.csv_Confirmed[self.csv_Confirmed.columns[-1]].tolist()[-1], '\tRecoverd:',
+                  self.csv_recovered[self.csv_recovered.columns[-1]].tolist()[-1], '\t\tDeceased:', self.csv_Death[self.csv_Death.columns[-1]].tolist()[-1])
+            print('############################################################')
 
     # call this method to see all collected datasets
     # it returns a list of dataframes
@@ -66,7 +68,7 @@ class initializer():
 
 
 class Demographic_overview(initializer):
-    def __init__(self,init):
+    def __init__(self,init,silent=False):
         '''
         This Demographic_overview class has the power of filtering in terms of state,
         district,city,date or range of date
@@ -76,7 +78,8 @@ class Demographic_overview(initializer):
         None.
 
         '''
-        print('Collecting Data.....')
+        if silent == False:
+            print('Collecting Data.....')
         json_url = urllib.request.urlopen(
             'https://api.covid19india.org/raw_data.json')
         data = json.loads(json_url.read())
@@ -95,7 +98,8 @@ class Demographic_overview(initializer):
         self.code=init.code
         self.district=np.unique([i for i in self.raw['detecteddistrict']])
         self.city=np.unique([i for i in self.raw['detectedcity']])
-        print('All Done.')
+        if silent == False:
+            print('All Done.')
 
     def demography(self,place='all',date='all'):
         '''
@@ -134,7 +138,7 @@ class Demographic_overview(initializer):
                             state=self.code[place]
                             
                         except:
-                            state=place
+                            state=place.title()
                             
                         state_filter=self.raw[self.raw['detectedstate']==state]
                         date_filter=state_filter[(state_filter['dateannounced']>=date[0]) & (state_filter['dateannounced']<=date[1])]
@@ -145,8 +149,8 @@ class Demographic_overview(initializer):
                         else:
                             raise Exception(f'No Data found between {datetime.strftime(date[0],"%d/%m/%Y")} and {datetime.strftime(date[1],"%d/%m/%Y")}')
                     except:
-                        if place in self.district:
-                            district_filter=self.raw[self.raw['detecteddistrict']==place]
+                        if place.title() in self.district:
+                            district_filter=self.raw[self.raw['detecteddistrict']==place.title()]
                             date_filter=district_filter[(district_filter['dateannounced']>=date[0]) & (district_filter['dateannounced']<=date[1])]
                             if date_filter.empty == False:
                                 frame=pd.concat([date_filter['detectedcity'],date_filter['dateannounced'],date_filter['gender']],axis=1)
@@ -155,8 +159,8 @@ class Demographic_overview(initializer):
                                 return pd.DataFrame({'count':frame})
                             else:
                                 raise Exception(f'No Data found between {datetime.strftime(date[0],"%d/%m/%Y")} and {datetime.strftime(date[1],"%d/%m/%Y")}')
-                        elif place in self.city:
-                            city_filter=self.raw[self.raw['detectedcity']==place]
+                        elif place.title() in self.city:
+                            city_filter=self.raw[self.raw['detectedcity']==place.title()]
                             date_filter=city_filter[(city_filter['dateannounced']>=date[0]) & (city_filter['dateannounced']<=date[1])]
                             if date_filter.empty == False:
                                 frame=pd.concat([date_filter['dateannounced'],date_filter['gender']],axis=1)
@@ -172,7 +176,7 @@ class Demographic_overview(initializer):
                             state=self.code[place]
                             
                         except:
-                            state=place
+                            state=place.title()
                             
                         state_filter=self.raw[self.raw['detectedstate']==state]
                         date_filter=state_filter[state_filter['dateannounced']==date]
@@ -184,8 +188,8 @@ class Demographic_overview(initializer):
                         else:
                             print(f'No Data found for {datetime.strftime(date,"%d/%m/%Y")}')
                     except:
-                        if place in self.district:
-                            district_filter=self.raw[self.raw['detecteddistrict']==place]
+                        if place.title() in self.district:
+                            district_filter=self.raw[self.raw['detecteddistrict']==place.title()]
                             date_filter=district_filter[district_filter['dateannounced']==date]
                             if date_filter.empty == False:
                                 frame=pd.concat([date_filter['detectedcity'],date_filter['dateannounced'],date_filter['gender']],axis=1)
@@ -194,8 +198,8 @@ class Demographic_overview(initializer):
                                 return pd.DataFrame({'count':frame})
                             else:
                                 raise Exception(f'No Data found for {datetime.strftime(date,"%d/%m/%Y")}')
-                        elif place in self.city:
-                            city_filter=self.raw[self.raw['detectedcity']==place]
+                        elif place.title() in self.city:
+                            city_filter=self.raw[self.raw['detectedcity']==place.title()]
                             date_filter=city_filter[city_filter['dateannounced']==date]
                             if date_filter.empty == False:
                                 frame=pd.concat([date_filter['dateannounced'],date_filter['gender']],axis=1)
@@ -210,7 +214,7 @@ class Demographic_overview(initializer):
                         state=self.code[place]
                         
                     except:
-                        state=place
+                        state=place.title()
                         
                     state_filter=self.raw[self.raw['detectedstate']==state]
                     if state_filter.empty == False:
@@ -220,8 +224,8 @@ class Demographic_overview(initializer):
                     else:
                         raise Exception(f'No Data found')
                 except:
-                    if place in self.district:
-                        district_filter=self.raw[self.raw['detecteddistrict']==place]
+                    if place.title() in self.district:
+                        district_filter=self.raw[self.raw['detecteddistrict']==place.title()]
                         if district_filter.empty == False:
                             frame=pd.concat([district_filter['detectedcity'],district_filter['dateannounced'],district_filter['gender']],axis=1)
                             #print(frame)
@@ -229,8 +233,8 @@ class Demographic_overview(initializer):
                             return pd.DataFrame({'count':frame})
                         else:
                             raise Exception(f'No Data found')
-                    elif place in self.city:
-                        city_filter=self.raw[self.raw['detectedcity']==place]
+                    elif place.title() in self.city:
+                        city_filter=self.raw[self.raw['detectedcity']==place.title()]
                         if city_filter.empty == False:
                             frame=pd.concat([city_filter['dateannounced'],city_filter['gender']],axis=1)
                             #print(frame)
