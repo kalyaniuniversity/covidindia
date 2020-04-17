@@ -54,7 +54,7 @@ class initializer():
 
     # call this method to see all collected datasets
     # it returns a list of dataframes
-    def show_data(self):
+    def show_data(self,of):
         '''
         This method only assembles the collected data 
 
@@ -64,8 +64,12 @@ class initializer():
             returns collected data as 3 dataframe format.
 
         '''
-        return [self.csv_Confirmed, self.csv_recovered, self.csv_Death]
-
+        if of.lower() == 'confirmed':
+            return self.csv_Confirmed
+        elif of.lower() =='recovered':
+            return self.csv_recovered
+        elif of.lower() =='death':
+            return self.csv_Death
 
 class Demographic_overview(initializer):
     def __init__(self,init,silent=False):
@@ -519,7 +523,7 @@ class Data(initializer):
             except:
                 raise Exception('by Argument must be "death" or "recovered" or "confirmed"')
 
-    def rank(self, num, by, kind='top', cummulative=False, date=None):
+    def rank(self, num, by, kind='top', cumulative=False, date=None):
         '''
         Gives top n or bottom n values as cumulative or daily basis for a date or
         combining whole dates filtered with by parameter.
@@ -557,7 +561,7 @@ class Data(initializer):
 
         '''
         if date != None:
-            if cummulative == True:
+            if cumulative == True:
                 try:
                     df = self.get_dataset_by_date(date)
                     df = df.iloc[:-1,
@@ -582,7 +586,7 @@ class Data(initializer):
                 except:
                     raise Exception('Check date or by parameter')
         else:
-            if cummulative == True:
+            if cumulative == True:
                 try:
                     df = self.get_dataset_state()
                     df = df.iloc[:-1,

@@ -12,18 +12,18 @@ It gathers information from our own maintained database. Database data are colle
 
 ## Installation
 
-As of now, the code is kept open-source directly accessible from this repository. We are working on bringing it ot PyPI. Shall update the README as soon as we are done with it.
+pip install covdata
 
 ## Usage
 
      #import module
-     from Covid.covidindia import *
+     from covdata.covidindia import *
 
      #Initialize the module to collect the data
      Init=initializer()
 
-     #shows the collected data in Dataframe formate
-     Init.show_data()
+     #shows the collected data in Dataframe format of Total Confimed data
+     Init.show_data(of='Total Confirmed')
 
      obj1=Data(init)       #defining the object for Data class
      cumData=obj1.get_cum_dataset_between_date('30/1/2020','5/4/2020',by='total recovered')   #gives the cumulative count between 30/1/2020 and 5/4/2020
@@ -40,7 +40,39 @@ As of now, the code is kept open-source directly accessible from this repository
 
 ## Examples
 
-Examples are in github repository project folder.
+Examples are in [github](https://github.com/kalyaniuniversity/covidindia) repository project folder.
+
+## Terminal Usage
+
+     #get help
+     covdata -h
+
+     #get dataset of user choice
+     covdata -f Total_Confirmed --options show_data
+
+     #save the above data as csv
+     covdata -f Total_Confirmed --options show_data --save PATH\
+
+     #get demographic overview by place and date
+     covdata -p wb -d all --options demography   #please use state code.here 'wb' means 'West bengal'
+
+     #get above data for first n rows for simplicity
+     covdata -p wb -d all --options demography -H 10      #head(10)
+
+     #get data by state
+     covdata -s mp --options state_dataset       #for madhyapradesh
+
+     #get data by date
+     covdata -d 10/4/2020 --options data_by_date
+
+     #get count by date
+     covdata -d 11/4/2020 -f Total_Recovered --options count_by_date
+
+     #get top n values in India
+     covdata -r 15 -f Total_Confirmed --options rank    #top 15 values of total confirmed cases
+
+     #graph of whole data
+     covdata -g whole -D y     #plot the whole data with dailly counts
 
 ## Documentation
 
@@ -221,13 +253,16 @@ visualizer
      |  ----------------------------------------------------------------------
      |  Methods inherited from initializer:
      |
-     |  show_data(self)
-     |      This method only assembles the collected data
+     |  show_data(self,of)
+     |      This method only assembles the collected data of Tota Confirmed/Total Recovered/Total Death
      |
+     |      Parameters
+     |      ----------
+     |      of : character, Tota Confirmed/Total Recovered/Total Death(any one)
      |      Returns
      |      -------
-     |      list
-     |          returns collected data as 3 dataframe format.
+     |      Dataframe
+     |          returns dataframe consisting of data by Tota Confirmed/Total Recovered/Total Death.
      |
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from initializer:
@@ -268,7 +303,8 @@ visualizer
      |          will be shown.
      |      date : character, optional
      |          by which date or range of date the data will be filtered.Date must be dd/mm/yyyy format.
-     |          The default is 'all'.if date is not mentioned data for all dates will be shown
+     |          The default is 'all'.if date is not mentioned data for all dates will be shown.
+     |          set date: '30/1/2020-9/3/2020'. to represent a range.range dates should be separated by '-'.
      |
      |      Raises
      |      ------
