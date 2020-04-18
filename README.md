@@ -14,7 +14,7 @@ It gathers information from our own maintained database. Database data are colle
 
      pip install covdata
 
-PyPi Link:[covdata](https://pypi.org/project/covdata/)
+PyPi Link: [covdata](https://pypi.org/project/covdata/)
 
 ## Usage
 
