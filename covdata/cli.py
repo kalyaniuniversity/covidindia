@@ -7,6 +7,7 @@ Created on Fri Apr 17 10:17:34 2020
 
 from .covidindia import *
 import argparse
+from datetime import datetime, timedelta
 
 
 def main():
@@ -17,7 +18,7 @@ def main():
     parser.add_argument('-s', '--state', type=str,
                         help='takes state')
     parser.add_argument('-p', '--place', type=str,
-                        help='take name of any state or district or city')
+                        help='take name of any state or district or city(only use for --options demography)')
     parser.add_argument('-H', '--head', type=int,
                         help='process top rows by given number')
     parser.add_argument('-T', '--tail', type=int,
@@ -25,7 +26,7 @@ def main():
     parser.add_argument('-D', '--daily', type=str,
                         help='if y(yes) daily count will be shown')
     parser.add_argument('-r', '--rank', type=int,
-                        help='top rows will be shown by given value')
+                        help='top rows will be shown by given value(donot use -r for graph type "whole")')
     parser.add_argument('--save', type=str,
                         help='save as csv to given path')
     parser.add_argument('-g', '--graph', type=str,
@@ -41,6 +42,7 @@ def main():
 
     args = parser.parse_args()
     init = initializer(silent=True)
+    confirmed = init.show_data(of='Confirmed')
     if args.options == 'show_data':
         of = args.of
         if '_' in of:
@@ -198,20 +200,70 @@ def main():
     elif args.options == 'graph':
         obj3 = visualizer(init)
         if args.graph == 'whole':
-            if args.daily == 'y':
-                obj3.whole(daily=True)
+            if args.rank == None:
+                if args.state != None:
+                    start = '30/1/2020'
+                    end = datetime.strftime(datetime.strptime(
+                        confirmed.columns[-1], '%m/%d/%Y'), '%d/%m/%Y')
+                    if args.daily == 'y':
+
+                        obj3.graph_by_date(
+                            startDate=start, endDate=end, state=args.state, daily=True)
+                    else:
+                        obj3.graph_by_date(
+                            startDate=start, endDate=end, state=args.state)
+                else:
+                    if args.daily == 'y':
+                        obj3.whole(daily=True)
+                    else:
+                        obj3.whole()
             else:
-                obj3.whole()
+                print('Do not use -r flag for whole type of graph')
+
         elif args.graph == 'head':
-            if args.daily == 'y':
-                obj3.head(num=args.rank, daily=True)
+            if args.rank != None:
+                if args.state != None:
+                    s = '30/01/2020'
+                    e = datetime.strftime(datetime.strptime(
+                        s, '%d/%m/%Y')+timedelta(args.rank), '%d/%m/%Y')
+                    if args.daily == 'y':
+
+                        # obj3.head(num=args.rank,daily=True)
+                        obj3.graph_by_date(
+                            startDate=s, endDate=e, state=args.state, daily=True)
+                    else:
+                        obj3.graph_by_date(
+                            startDate=s, endDate=e, state=args.state)
+                else:
+                    if args.daily == 'y':
+                        obj3.head(num=args.rank, daily=True)
+                    else:
+                        obj3.head(num=args.rank)
             else:
-                obj3.head(num=args.rank)
+                print('-r flag is required for head type graph')
+
         elif args.graph == 'tail':
-            if args.daily == 'y':
-                obj3.tail(num=args.rank, daily=True)
+            if args.rank != None:
+                if args.state != None:
+                    time = confirmed.columns[-1]
+                    d = datetime.strptime(time, '%m/%d/%Y')
+                    s = datetime.strftime(d-timedelta(args.rank), '%d/%m/%Y')
+                    e = datetime.strftime(d, '%d/%m/%Y')
+                    if args.daily == 'y':
+
+                        # obj3.head(num=args.rank,daily=True)
+                        obj3.graph_by_date(
+                            startDate=s, endDate=e, state=args.state, daily=True)
+                    else:
+                        obj3.graph_by_date(
+                            startDate=s, endDate=e, state=args.state)
+                else:
+                    if args.daily == 'y':
+                        obj3.tail(num=args.rank, daily=True)
+                    else:
+                        obj3.tail(num=args.rank)
             else:
-                obj3.tail(num=args.rank)
+                print('-r flag is required for tail type graph')
 
 
 if __name__ == '__main__':
