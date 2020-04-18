@@ -12,7 +12,9 @@ It gathers information from our own maintained database. Database data are colle
 
 ## Installation
 
-pip install covdata
+     pip install covdata
+
+PyPi Link:[covdata](https://pypi.org/project/covdata/)
 
 ## Usage
 
