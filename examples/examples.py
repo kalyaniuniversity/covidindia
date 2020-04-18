@@ -20,7 +20,7 @@ package name: CovidIndia
 # import the package
 
 # 1st initializer must be called
-from Covid.CovidIndia import *
+from covdata.covidindia import *
 instance_1 = initializer()
 
 # Shows the data that are collected as list
@@ -57,15 +57,24 @@ setdata7 = instance_2.get_count_by_date('10/3/2020', by='death')
 
 # top/bottom n points between all states by='total confirmed'/'total death'/'total recovered' for a particular date
 instance_2.rank(10, 'Total Confirmed', kind='top',
-                cummulative=True, date='4/3/2020')
-# if date is not given them it will show top n or bottom n upto now with states names.
-instance_2.rank(10, 'Total Confirmed', kind='top', cummulative=True)
+                cumulative=True, date='4/3/2020')
+# if date is not given then it will show top n or bottom n upto now with states names.
+instance_2.rank(10, 'Total Confirmed', kind='top', cumulative=True)
 
 # creating object for Demographic_overview class
-obj = Demographic_overview()
+# it will grab the counts of confirmed cases based on Male,Female and Unknown(if data is not known) for any city or state or district
+# you can also use state code
+obj = Demographic_overview(instance_1)
 
-# getting data by running the following and giving some filters in the console
-demographyData = obj.demograpy()
+
+obj.demography('Delhi', 'all')  # grab the data for delhi and for all date
+# grab the data for delhi for the date 15/4/2020
+obj.demography('Delhi', '15/4/2020')
+# grab the data for delhi between 10/3/2020 and 15/4/2020
+obj.demography('Delhi', '10/3/2020-15/4/2020')
+# it also works for any city or state or district
+obj.demography('gaya', '10/3/2020-15/4/2020')
+# it grabs the data for city gaya between 10/3/2020 and 15/4/2020
 
 
 # visualization part

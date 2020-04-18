@@ -1,8 +1,10 @@
-﻿# CovidIndia Module
+﻿# covdata Module
 
 **Description**
 
-This CovidIndia Module has the power to bring all the data related to Covid-19 outbreak in India in a tabular form. This module will bring the whole set of raw data in a date-wise and processed format from [the COVID-19 Indian Dataset maintained by University of Kalyani](https://github.com/kalyaniuniversity/COVID-19-Datasets), which will be easier to deal with.
+This covdata Module has the power to bring all the data related to Covid-19 outbreak in India in a tabular form. This module will bring the whole set of raw data in a date-wise and processed format from [the COVID-19 Indian Dataset maintained by University of Kalyani](https://github.com/kalyaniuniversity/COVID-19-Datasets), which will be easier to deal with.
+
+PyPi Link: [covdata](https://pypi.org/project/covdata/)
 
 Once installed, we can get an up-to-date information about the Covid-19 affected people, till the day the data is available at the source. We can visualize the data of our choice for any given range of dates. It is capable of giving information about the total number of confirmed, recovered and deceased patients, between any two dates, of any city, district or related to any particular gender (male/female). We can also visualize the whole up-to-date data without using any aforesaid filters using our module.
 
@@ -12,7 +14,7 @@ It gathers information from our own maintained database. Database data are colle
 
 ## Installation
 
-pip install covdata
+     pip install covdata
 
 ## Usage
 
@@ -72,7 +74,7 @@ Examples are in [github](https://github.com/kalyaniuniversity/covidindia) reposi
      covdata -r 15 -f Total_Confirmed --options rank    #top 15 values of total confirmed cases
 
      #graph of whole data
-     covdata -g whole -D y     #plot the whole data with dailly counts
+     covdata -g whole -D y --options graph   #plot the whole data with dailly counts
 
 ## Documentation
 
@@ -215,7 +217,7 @@ visualizer
      |          if state is mentioned then it will return a dataframe consisting the names
      |          of districts with total cumultive counts of confirmed only
      |
-     |  rank(self, num, by, kind='top', cummulative=False, date=None)
+     |  rank(self, num, by, kind='top', cumulative=False, date=None)
      |      Gives top n or bottom n values as cumulative or daily basis for a date or
      |      combining whole dates filtered with by parameter.
      |
@@ -228,7 +230,7 @@ visualizer
      |          'Total Confirmed' or 'Total Recovered' or 'Total Death'.
      |      kind : character, optional
      |          'top' or 'bottom' by which data will be filtered. The default is 'top'.
-     |      cummulative : bool, optional
+     |      cumulative : bool, optional
      |         if True it will show cumulative counts. The default is False.
      |      date : character, optional
      |          (must be in dd/mm/yyyy format)if date is given then method will return cumulative or daily count
