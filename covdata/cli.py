@@ -14,11 +14,11 @@ def main():
     parser = argparse.ArgumentParser(
         description='Process some output of Covid-19 data in india.')
     parser.add_argument('-d', '--date', type=str,
-                        help='takes date')
+                        help='takes date.For date range use two dates separated by "-"')
     parser.add_argument('-s', '--state', type=str,
-                        help='takes state')
+                        help='takes state.It takes only state code.Do not use it for demography options')
     parser.add_argument('-p', '--place', type=str,
-                        help='take name of any state or district or city(only use for --options demography)')
+                        help='take name of any state or district or city.This flag only be used in demography options')
     parser.add_argument('-H', '--head', type=int,
                         help='process top rows by given number')
     parser.add_argument('-T', '--tail', type=int,
@@ -26,7 +26,7 @@ def main():
     parser.add_argument('-D', '--daily', type=str,
                         help='if y(yes) daily count will be shown')
     parser.add_argument('-r', '--rank', type=int,
-                        help='top rows will be shown by given value(donot use -r for graph type "whole")')
+                        help='top rows will be shown by given value(do not use -r for graph type "whole")')
     parser.add_argument('--save', type=str,
                         help='save as csv to given path')
     parser.add_argument('-g', '--graph', type=str,
@@ -37,7 +37,8 @@ def main():
     parser.add_argument('--options', type=str, required=True,
                         help='operations user want to do', choices=['show_data', 'demography',
                                                                     'state_dataset', 'data_by_date',
-                                                                    'count_by_date', 'rank',
+                                                                    'count_by_date', 'rank', 'cumulative_between_date',
+                                                                    'count_between_date',
                                                                     'graph'])
 
     args = parser.parse_args()
@@ -264,6 +265,68 @@ def main():
                         obj3.tail(num=args.rank)
             else:
                 print('-r flag is required for tail type graph')
+
+    elif args.options == 'cumulative_between_date':
+        obj2 = Data(init)
+        if args.of != None:
+            if '-' in args.date:
+                of = args.of.replace('_', " ")
+                date = args.date.split('-')
+                df = obj2.get_cum_dataset_between_date(
+                    startDate=date[0], endDate=date[1], by=of)
+                if args.head != None:
+                    if args.save != None:
+                        df.head(args.head).to_csv(
+                            args.save+f'cumulative-({date[0].replace("/",".")}-{date[1].replace("/",".")})HEAD-{args.head}.csv')
+                    else:
+                        print(df.head(args.head))
+                elif args.tail != None:
+                    if args.save != None:
+                        df.tail(args.tail).to_csv(
+                            args.save+f'cumulative-({date[0].replace("/",".")}-{date[1].replace("/",".")})TAIL-{args.tail}.csv')
+                    else:
+                        print(df.tail(args.tail))
+                else:
+                    if args.save != None:
+                        df.to_csv(
+                            args.save+f'cumulative-({date[0].replace("/",".")}-{date[1].replace("/",".")}).csv')
+                    else:
+                        print(df)
+            else:
+                print('Give to dates separated by "-" (eg. 05/02/2020-06/03/2020)')
+        else:
+            print('-f flag should be given')
+
+    elif args.options == 'count_between_date':
+        obj2 = Data(init)
+        if args.of != None:
+            if '-' in args.date:
+                of = args.of.split('_')[1]
+                date = args.date.split('-')
+                df = obj2.get_count_between_date(
+                    startDate=date[0], endDate=date[1], by=of)
+                if args.head != None:
+                    if args.save != None:
+                        df.head(args.head).to_csv(
+                            args.save+f'count-({date[0].replace("/",".")}-{date[1].replace("/",".")})HEAD-{args.head}.csv')
+                    else:
+                        print(df.head(args.head))
+                elif args.tail != None:
+                    if args.save != None:
+                        df.tail(args.tail).to_csv(
+                            args.save+f'count-({date[0].replace("/",".")}-{date[1].replace("/",".")})TAIL-{args.tail}.csv')
+                    else:
+                        print(df.tail(args.tail))
+                else:
+                    if args.save != None:
+                        df.to_csv(
+                            args.save+f'count-({date[0].replace("/",".")}-{date[1].replace("/",".")}).csv')
+                    else:
+                        print(df)
+            else:
+                print('Give to dates separated by "-" (eg. 05/02/2020-06/03/2020)')
+        else:
+            print('-f flag should be given')
 
 
 if __name__ == '__main__':

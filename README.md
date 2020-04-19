@@ -73,6 +73,12 @@ Examples are in [github](https://github.com/kalyaniuniversity/covidindia) reposi
      #get top n values in India
      covdata -r 15 -f Total_Confirmed --options rank    #top 10 values of total confirmed cases
 
+     #get cumulative data between two given dates
+     covdata -d 15/3/2020-30/3/2020 -f Total_Recovered --options cumulative_between_date     #Total recovered cumulative data between 15/3/2020 and 30/3/2020
+
+     #get daily count between two dates
+     covdata -d 15/3/2020-30/3/2020 -f Total_Confirmed --options count_between_date   #Daily count data between 15/3/2020 and 30/3/2020
+
      #graph of whole data
      covdata -g whole -D y --options graph    #plot the whole data with dailly counts
 
@@ -83,7 +89,7 @@ Examples are in [github](https://github.com/kalyaniuniversity/covidindia) reposi
      covdata -g head -r 15 -D y -s wb --options graph   #plots 1st 15 days daily counts for west bengal
      covdata -g head -r 15 -D n -s wb --options graph   #plots 1st 15 days cumulative counts for west bengal
 
-     #similarly -g tail will work same and please use state code.Terminal feature demonstrates some methods only that are written in --options flag(type 'covdata -h' to see options)
+     #similarly -g tail will work same and please use state code.Terminal feature demonstrates some methods only that are written in --options flag(type 'covdata -h' to see options). -H -T and --save flag canbe used for every method that returns a dataframe not a graph.
 
 ## Documentation
 
