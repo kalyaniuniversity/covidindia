@@ -159,7 +159,7 @@ visualizer
      |      endDate : character
      |          date format dd/mm/yyyy.
      |      by : character
-     |          'Total Confirmed' or 'Total Recovered' or 'Total Death'.
+     |          'Confirmed' or 'Recovered' or 'Death'.
      |
      |      Raises
      |      ------
@@ -235,7 +235,7 @@ visualizer
      |          Dataframe consisting all cumulative values of total confirmed,total recovered,total
      |          death for a given date.
      |
-     |  get_dataset_state(self, state='Whole')
+     |  get_dataset_state(self, state='Whole', daily=False)
      |      this method of Data class will allow user to get cumulative counts of a particular
      |      state.
      |
@@ -243,14 +243,26 @@ visualizer
      |      ----------
      |      state : character, optional
      |          name of state in India. The default is 'Whole'.
-     |          state code also applicable.
+     |          state code is also applicable.If not given data for all states will be shown.
+     |      daily : bool, optional
+     |          If True Daily Count data will be shown. The default is False.
+     |
+     |      Raises
+     |      ------
+     |      Exception
+     |          If state/state code is wrong it will raise exception.
+     |
      |      Returns
      |      -------
      |      df : DataFrame
-     |          if state is whole then it Returns a dataframe consisting all states having
+     |          if state is whole and daily is Flase then it Returns a dataframe consisting all states having
      |          cumulative count of totalconfirmed,total recovered,total death till the previous day of the day of using this package.
-     |          if state is mentioned then it will return a dataframe consisting the names
-     |          of districts with total cumultive counts of confirmed only
+     |          Otherwise for daily is True it will return dictionary of dataframes having confirmed,recovered and death cases for all states.
+     |          if state is mentioned and daily is true then it will return a dataframe consisting all dates showing daily confirmed,daily recovered and
+     |          daily death.
+     |
+     |          if state is mentioned and daily is False then a dataframe will be returned consisting of name of districts of that states along with only
+     |          confirmed data.
      |
      |  rank(self, num, by, kind='top', cumulative=False, date=None)
      |      Gives top n or bottom n values as cumulative or daily basis for a date or
@@ -265,7 +277,7 @@ visualizer
      |          'Total Confirmed' or 'Total Recovered' or 'Total Death'.
      |      kind : character, optional
      |          'top' or 'bottom' by which data will be filtered. The default is 'top'.
-     |      cumulative : bool, optional
+     |      cummulative : bool, optional
      |         if True it will show cumulative counts. The default is False.
      |      date : character, optional
      |          (must be in dd/mm/yyyy format)if date is given then method will return cumulative or daily count
@@ -290,16 +302,13 @@ visualizer
      |  ----------------------------------------------------------------------
      |  Methods inherited from initializer:
      |
-     |  show_data(self,of)
-     |      This method only assembles the collected data of Tota Confirmed/Total Recovered/Total Death
+     |  show_data(self, of)
+     |      This method only assembles the collected data
      |
-     |      Parameters
-     |      ----------
-     |      of : character, Tota Confirmed/Total Recovered/Total Death(any one)
      |      Returns
      |      -------
-     |      Dataframe
-     |          returns dataframe consisting of data by Tota Confirmed/Total Recovered/Total Death.
+     |      list
+     |          returns collected data as 3 dataframe format.
      |
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from initializer:
@@ -311,7 +320,7 @@ visualizer
      |      list of weak references to the object (if defined)
 
     class Demographic_overview(initializer)
-     |  Demographic_overview(init)
+     |  Demographic_overview(init, silent=False)
      |
      |  Method resolution order:
      |      Demographic_overview
@@ -320,7 +329,7 @@ visualizer
      |
      |  Methods defined here:
      |
-     |  __init__(self, init)
+     |  __init__(self, init, silent=False)
      |      This Demographic_overview class has the power of filtering in terms of state,
      |      district,city,date or range of date
      |
@@ -340,8 +349,7 @@ visualizer
      |          will be shown.
      |      date : character, optional
      |          by which date or range of date the data will be filtered.Date must be dd/mm/yyyy format.
-     |          The default is 'all'.if date is not mentioned data for all dates will be shown.
-     |          set date: '30/1/2020-9/3/2020'. to represent a range.range dates should be separated by '-'.
+     |          The default is 'all'.if date is not mentioned data for all dates will be shown
      |
      |      Raises
      |      ------
@@ -356,7 +364,7 @@ visualizer
      |  ----------------------------------------------------------------------
      |  Methods inherited from initializer:
      |
-     |  show_data(self)
+     |  show_data(self, of)
      |      This method only assembles the collected data
      |
      |      Returns
@@ -374,9 +382,11 @@ visualizer
      |      list of weak references to the object (if defined)
 
     class initializer(builtins.object)
+     |  initializer(silent=False)
+     |
      |  Methods defined here:
      |
-     |  __init__(self)
+     |  __init__(self, silent=False)
      |      This is a class that will scrap the data from source upto the previous day of
      |      day of using that package.
      |
@@ -384,7 +394,7 @@ visualizer
      |      -------
      |      None.
      |
-     |  show_data(self)
+     |  show_data(self, of)
      |      This method only assembles the collected data
      |
      |      Returns
@@ -423,12 +433,14 @@ visualizer
      |      -------
      |      None.
      |
-     |  graph_by_date(self, startDate, endDate, state=None, daily=False)
+     |  graph_by_date(self, startDate, endDate, state=None, title=None, daily=False)
      |      Gives the visualization of cumulative data or daily data between two given
      |      dates for a given state or as whole india.
      |
      |      Parameters
      |      ----------
+     |      title : Character, optional
+     |          Sets the title of the subplots. The default is None.
      |      startDate : character
      |          dd/mm/yyyy format(e.g 02/04/2020).
      |      endDate : character
@@ -450,11 +462,13 @@ visualizer
      |      between two dates.
      |      may be daily or cumulative based on daily parameter passed.
      |
-     |  head(self, num, daily=False)
+     |  head(self, num, title=None, daily=False)
      |      Gives graphical visualization of first n(=num) dayes based on daily or cumulative data
      |
      |      Parameters
      |      ----------
+     |      title : Character, optional
+     |          Sets the title of the subplots. The default is None.
      |      num : integer
      |          setd the number of dates from start user wants to see.
      |      daily : bool, optional
@@ -465,18 +479,25 @@ visualizer
      |      3 subplots consisting date vs total confirmed,date vs total recovered,date vs total deceased.
      |      may be daily or cumulative based on daily parameter passed.
      |
-     |  plot_by_latitude(self)
+     |  plot_by_latitude(self, title=None)
      |      Gives the visualization of counts with respect to state latitudes
+     |
+     |      Parameters
+     |      ----------
+     |      title : Character, optional
+     |          Sets the title of the subplots. The default is None.
      |
      |      Returns
      |      -------
      |      3 subplots consisting latitude vs latitude confirmed,latitudes vs total recovered,latitudes vs total deceased.
      |
-     |  tail(self, num, daily=False)
+     |  tail(self, num, title=None, daily=False)
      |      Gives graphical visualization of latest n(=num) dayes based on daily or cumulative data
      |
      |      Parameters
      |      ----------
+     |      title : Character, optional
+     |          Sets the title of the subplots. The default is None.
      |      num : integer
      |          setd the number of latest dates user wants to see.
      |      daily : bool, optional
@@ -487,11 +508,13 @@ visualizer
      |      3 subplots consisting date vs total confirmed,date vs total recovered,date vs total deceased.
      |      may be daily or cumulative based on daily parameter passed.
      |
-     |  whole(self, daily=False)
+     |  whole(self, title=None, daily=False)
      |      Generate 3 subplots of whole collected data
      |
      |      Parameters
      |      ----------
+     |      title : Character, optional
+     |          Sets the title of the subplots. The default is None.
      |      daily : bool, optional
      |          if True garph will be plotted on daily counts otherwise on cumulative counts. The default is False.
      |
@@ -503,19 +526,10 @@ visualizer
      |  ----------------------------------------------------------------------
      |  Methods inherited from initializer:
      |
-     |  show_data(self)
+     |  show_data(self, of)
      |      This method only assembles the collected data
      |
      |      Returns
      |      -------
      |      list
      |          returns collected data as 3 dataframe format.
-     |
-     |  ----------------------------------------------------------------------
-     |  Data descriptors inherited from initializer:
-     |
-     |  __dict__
-     |      dictionary for instance variables (if defined)
-     |
-     |  __weakref__
-     |      list of weak references to the object (if defined)
