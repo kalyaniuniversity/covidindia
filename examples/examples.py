@@ -42,7 +42,14 @@ data = instance_1.show_data(of='death')
 instance_2 = Data(instance_1)
 
 # get data for a given state update till today
-Set = instance_2.get_dataset_state('py')  # mention state
+# shows daily counts of confirmed,recovered and death for all dates of Pondicherry
+Set = instance_2.get_dataset_state(state='wb', daily=True)
+# shows counts of only confirmed cases of districts of Pondicherry
+Set = instance_2.get_dataset_state(state='py', daily=False)
+# shows total counts of confirmed,recovered and death for all states(cause state is not mentioned)
+Set = instance_2.get_dataset_state(daily=False)
+# returns a dictionary containing confirmed,recovered and death dataframes containing datewise counts for all states.
+Set = instance_2.get_dataset_state(daily=True)
 # if state is not mentioned by default it will grab data for all the states
 Set = instance_2.get_dataset_state()
 
@@ -100,21 +107,25 @@ instance_3 = visualizer(instance_1)
 
 # visualize fast n days as cumulative or daily
 # if daily is true it gives daily counts of 1st n days
-instance_3.head(num=15, daily=False)
-instance_3.head(num=5)  # by default daily  is false
+instance_3.head(num=15, daily=False, title='1st 15 cumulative plot')
+# by default daily  is false and does not set any title if title is not mentioned.
+instance_3.head(num=5)
 
 # visualize last n days as cumulative or daily
 # if daily is true it gives daily counts of last n days
-instance_3.tail(num=15, daily=True)
-instance_3.tail(num=15)  # by default daily  is false
+instance_3.tail(num=15, daily=True, title='last 15 daily count plot')
+# by default daily  is false and does not set any title if title is not mentioned.
+instance_3.tail(num=15)
 
 # visualise the whole data as cumulative or daily
-instance_3.whole(daily=True)
-instance_3.whole()  # by default daily  is false
+instance_3.whole(daily=True, title='daily count plot for all states')
+instance_3.whole()  # by default daily  is false and does not set the title
 
 # visualize data between two dates as cumulative or daily
 instance_3.graph_by_date('30/01/2020', '7/04/2020',
-                         state='tg', daily=True)  # by default daily is False
+                         state='tg', daily=True, title='daily count plot between 30/1/2020 and 7/4/2020 of telengana')  # by default daily is False
 # if state is not mentioned by default it will graph all states together
-instance_3.graph_by_date('1/02/2020', '29/03/2020', daily=True)
-instance_3.plot_by_latitude()  # plot the total counts for each states vs latitude
+instance_3.graph_by_date('1/02/2020', '29/03/2020', daily=True,
+                         title='daily count plot between 1/2/2020 and 29/03/2020 for all states together')
+# plot the total counts for each states vs latitude
+instance_3.plot_by_latitude(title='Population vs Latitude plot')

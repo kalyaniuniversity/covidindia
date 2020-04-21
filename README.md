@@ -1,4 +1,6 @@
-﻿# covdata.covidindia Module
+﻿![CoronaImage](image/corona.jpg)
+
+# covdata.covidindia Module
 
 **Description**
 
@@ -15,6 +17,12 @@ It gathers information from our own maintained database. Database data are colle
      pip install covdata
 
 PyPi Link: [covdata](https://pypi.org/project/covdata/)
+
+## What's new!!
+
+- Added some functionalities for CLI. See terminal usage.
+- Now user can save csv files with user's own given name when using CLI. See help for --save flag by typing covdata -h
+- User can add custom titles for the graphs.
 
 ## Usage
 
@@ -64,6 +72,12 @@ Examples are in [github](https://github.com/kalyaniuniversity/covidindia) reposi
      #get data by state
      covdata -s mp --options state_dataset       #for madhyapradesh
 
+     #get daily count data for any state
+     covdata -s mp --options state_dataset -D y   #daily basis count for madhyaprades.
+
+     #get daily count for all states of total confirmed/total recovered/total death
+     covdata -f Total_Confirmed --options state_dataset        #Total Confirmed cases for daily basis for all states.
+
      #get data by date
      covdata -d 10/4/2020 --options data_by_date
 
@@ -71,7 +85,13 @@ Examples are in [github](https://github.com/kalyaniuniversity/covidindia) reposi
      covdata -d 11/4/2020 -f Total_Recovered --options count_by_date
 
      #get top n values in India
-     covdata -r 15 -f Total_Confirmed --options rank    #top 10 values of total confirmed cases
+     covdata -r 15 -f Total_Confirmed --options rank    #top 10 values of total confirmed cases as cumulative
+
+     #get top 10 values of Total Recovered on the basis of daily counts for any date
+     covdata -r 10 -f Total_Recovered -D y --options rank -d 15/3/2020
+
+     #get top 10 values of Total Recovered cases as cumulative counts for any date
+     covdata -r 10 -f Total_Recovered -D n --options rank -d 15/3/2020
 
      #get cumulative data between two given dates
      covdata -d 15/3/2020-30/3/2020 -f Total_Recovered --options cumulative_between_date     #Total recovered cumulative data between 15/3/2020 and 30/3/2020
@@ -89,7 +109,7 @@ Examples are in [github](https://github.com/kalyaniuniversity/covidindia) reposi
      covdata -g head -r 15 -D y -s wb --options graph   #plots 1st 15 days daily counts for west bengal
      covdata -g head -r 15 -D n -s wb --options graph   #plots 1st 15 days cumulative counts for west bengal
 
-     #similarly -g tail will work same and please use state code.Terminal feature demonstrates some methods only that are written in --options flag(type 'covdata -h' to see options). -H -T and --save flag canbe used for every method that returns a dataframe not a graph.
+     #similarly -g tail will work same and please use state code.Terminal feature demonstrates some methods only that are written in --options flag(type 'covdata -h' to see options). -H -T and --save flag can be used for every method that returns a dataframe not a graph.
 
 ## Documentation
 

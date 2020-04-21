@@ -26,9 +26,9 @@ def main():
     parser.add_argument('-D', '--daily', type=str,
                         help='if y(yes) daily count will be shown')
     parser.add_argument('-r', '--rank', type=int,
-                        help='top rows will be shown by given value(do not use -r for graph type "whole")')
+                        help='top rows will be shown by given value(donot use -r for graph type "whole")')
     parser.add_argument('--save', type=str,
-                        help='save as csv to given path')
+                        help='save as csv to given path with file name(e.g.D:\path\where\to\filename.csv')
     parser.add_argument('-g', '--graph', type=str,
                         help='shows different types graph', choices=['whole', 'head', 'tail'])
     parser.add_argument('-f', '--of', type=str,
@@ -51,25 +51,23 @@ def main():
             if args.head != None:
                 if args.save != None:
                     init.show_data(of).head(args.head).to_csv(
-                        args.save+'show_data.csv', index=True)
+                        args.save, index=True)
                 else:
                     print(init.show_data(of).head(args.head))
             elif args.tail != None:
                 if args.save != None:
                     init.show_data(of).tail(args.tail).to_csv(
-                        args.save+'show_data.csv', index=True)
+                        args.save, index=True)
                 else:
                     print(init.show_data(of).tail(args.tail))
             elif args.head == None:
                 if args.save != None:
-                    init.show_data(of).to_csv(
-                        args.save+'show_data.csv', index=True)
+                    init.show_data(of).to_csv(args.save, index=True)
                 else:
                     print(init.show_data(of))
             elif args.tail == None:
                 if args.save != None:
-                    init.show_data(of).to_csv(
-                        args.save+'show_data.csv', index=True)
+                    init.show_data(of).to_csv(args.save, index=True)
                 else:
                     print(init.show_data(of))
         else:
@@ -82,51 +80,60 @@ def main():
             df = demo.demography(place=args.place, date=args.date)
         if args.head != None:
             if args.save != None:
-                df.head(args.head).to_csv(
-                    args.save+f'demography_{args.place}_head_{args.head}.csv', index=True)
+                df.head(args.head).to_csv(args.save, index=True)
             else:
                 print(df.head(args.head))
         elif args.tail != None:
             if args.save != None:
-                df.tail(args.tail).to_csv(
-                    args.save+f'demography_{args.place}_tail_{args.tail}.csv', index=True)
+                df.tail(args.tail).to_csv(args.save, index=True)
             else:
                 print(df.tail(args.tail))
         elif args.head == None:
             if args.save != None:
-                df.to_csv(args.save+f'demography_{args.place}.csv', index=True)
+                df.to_csv(args.save, index=True)
             else:
                 print(df)
         elif args.tail == None:
             if args.save != None:
-                df.to_csv(args.save+f'demography_{args.place}.csv', index=True)
+                df.to_csv(args.save, index=True)
             else:
                 print(df)
 
     elif args.options == 'state_dataset':
         obj2 = Data(init)
         state = args.state
-        df = obj2.get_dataset_state(state)
+        if args.daily == 'y':
+            if args.state != None:
+                df = obj2.get_dataset_state(args.state, daily=True)
+            elif args.of == None:
+                raise Exception(
+                    'Please specify -f flag for which you want to see daily count data for all states')
+            else:
+                df = obj2.get_dataset_state(
+                    daily=True)[f'{args.of.split("_")[1]}']
+        else:
+            if args.state != None:
+                df = obj2.get_dataset_state(args.state)
+            else:
+                df = obj2.get_dataset_state()
         if args.head != None:
             if args.save != None:
-                df.head(args.head).to_csv(
-                    args.save+f'{args.state}_head_{args.head}.csv')
+                df.head(args.head).to_csv(args.save)
             else:
                 print(df.head(args.head))
         elif args.tail != None:
             if args.save != None:
-                df.tail(args.tail).to_csv(
-                    args.save+f'{args.state}_tail_{args.tail}.csv')
+                df.tail(args.tail).to_csv(args.save)
             else:
                 print(df.tail(args.tail))
         elif args.head == None:
             if args.save != None:
-                df.to_csv(args.save+f'{args.state}.csv')
+                df.to_csv(args.save)
             else:
                 print(df)
         elif args.tail == None:
             if args.save != None:
-                df.to_csv(args.save+f'{args.state}.csv')
+                df.to_csv(args.save)
             else:
                 print(df)
 
@@ -136,26 +143,22 @@ def main():
         df = obj2.get_dataset_by_date(date)
         if args.head != None:
             if args.save != None:
-                df.head(args.head).to_csv(
-                    args.save+f'{args.date.split("/")[0]}-{args.date.split("/")[1]}_head_{args.head}.csv')
+                df.head(args.head).to_csv(args.save)
             else:
                 print(df.head(args.head))
         elif args.tail != None:
             if args.save != None:
-                df.tail(args.tail).to_csv(
-                    args.save+f'{args.date.split("/")[0]}-{args.date.split("/")[1]}_tail_{args.tail}.csv')
+                df.tail(args.tail).to_csv(args.save)
             else:
                 print(df.tail(args.tail))
         elif args.head == None:
             if args.save != None:
-                df.to_csv(
-                    args.save+f'{args.date.split("/")[0]}-{args.date.split("/")[1]}.csv')
+                df.to_csv(args.save)
             else:
                 print(df)
         elif args.tail == None:
             if args.save != None:
-                df.to_csv(
-                    args.save+f'{args.date.split("/")[0]}-{args.date.split("/")[1]}.csv')
+                df.to_csv(args.save)
             else:
                 print(df)
 
@@ -166,37 +169,46 @@ def main():
         df = obj2.get_count_by_date(by.split('_')[1], date)
         if args.head != None:
             if args.save != None:
-                df.head(args.head).to_csv(
-                    args.save+f'count_by_{by.split("_")[1]}_{args.date.split("/")[0]}-{args.date.split("/")[1]}_head_{args.head}.csv')
+                df.head(args.head).to_csv(args.save)
             else:
                 print(df.head(args.head))
         elif args.tail != None:
             if args.save != None:
-                df.tail(args.tail).to_csv(
-                    args.save+f'count_by_{by.split("_")[1]}_{args.date.split("/")[0]}-{args.date.split("/")[1]}_tail_{args.tail}.csv')
+                df.tail(args.tail).to_csv(args.save)
             else:
                 print(df.tail(args.tail))
         elif args.head == None:
             if args.save != None:
-                df.to_csv(
-                    args.save+f'count_by_{by.split("_")[1]}_{args.date.split("/")[0]}-{args.date.split("/")[1]}.csv')
+                df.to_csv(args.save)
             else:
                 print(df)
         elif args.tail == None:
             if args.save != None:
-                df.to_csv(
-                    args.save+f'count_by_{by.split("_")[1]}_{args.date.split("/")[0]}-{args.date.split("/")[1]}.csv')
+                df.to_csv(args.save)
             else:
                 print(df)
     elif args.options == 'rank':
         obj2 = Data(init)
         num = args.rank
-        by = args.of.split('_')[0]+f' {args.of.split("_")[1]}'
-        df = obj2.rank(num, by, cumulative=True)
-        if args.save != None:
-            df.to_csv(args.save+f'rank_{args.rank}_top.csv')
+        if args.of != None:
+            by = args.of.split('_')[0]+f' {args.of.split("_")[1]}'
+            if args.daily == 'y':
+                if args.date != None:
+                    df = obj2.rank(num, by, cumulative=False, date=args.date)
+                else:
+                    df = obj2.rank(num, by, cumulative=False)
+            else:
+                if args.date != None:
+                    df = obj2.rank(num, by, cumulative=True, date=args.date)
+                else:
+                    df = obj2.rank(num, by, cumulative=True)
+
+            if args.save != None:
+                df.to_csv(args.save)
+            else:
+                print(df)
         else:
-            print(df)
+            raise Exception('Use -f flag for which you want to rank')
 
     elif args.options == 'graph':
         obj3 = visualizer(init)
@@ -208,16 +220,17 @@ def main():
                         confirmed.columns[-1], '%m/%d/%Y'), '%d/%m/%Y')
                     if args.daily == 'y':
 
-                        obj3.graph_by_date(
-                            startDate=start, endDate=end, state=args.state, daily=True)
+                        obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
+                                           title=f'Daily count graph for {obj3.code[args.state]}', daily=True)
                     else:
-                        obj3.graph_by_date(
-                            startDate=start, endDate=end, state=args.state)
+                        obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
+                                           title=f'Cumulative count graph for {obj3.code[args.state]}')
                 else:
                     if args.daily == 'y':
-                        obj3.whole(daily=True)
+                        obj3.whole(
+                            daily=True, title=f'Daily graph for all dates')
                     else:
-                        obj3.whole()
+                        obj3.whole(title=f'Cumulative graph for all dates')
             else:
                 print('Do not use -r flag for whole type of graph')
 
@@ -230,16 +243,18 @@ def main():
                     if args.daily == 'y':
 
                         # obj3.head(num=args.rank,daily=True)
-                        obj3.graph_by_date(
-                            startDate=s, endDate=e, state=args.state, daily=True)
+                        obj3.graph_by_date(startDate=s, endDate=e, state=args.state, daily=True,
+                                           title=f'Daily graph of 1st {args.rank} days of {obj3.code[args.state]}')
                     else:
-                        obj3.graph_by_date(
-                            startDate=s, endDate=e, state=args.state)
+                        obj3.graph_by_date(startDate=s, endDate=e, state=args.state,
+                                           title=f'Cumulative graph of 1st {args.rank} days of {obj3.code[args.state]}')
                 else:
                     if args.daily == 'y':
-                        obj3.head(num=args.rank, daily=True)
+                        obj3.head(num=args.rank, daily=True,
+                                  title=f'Daily graph of 1st {args.rank} days')
                     else:
-                        obj3.head(num=args.rank)
+                        obj3.head(
+                            num=args.rank, title=f'Cumulative graph of 1st {args.rank} days')
             else:
                 print('-r flag is required for head type graph')
 
@@ -253,16 +268,18 @@ def main():
                     if args.daily == 'y':
 
                         # obj3.head(num=args.rank,daily=True)
-                        obj3.graph_by_date(
-                            startDate=s, endDate=e, state=args.state, daily=True)
+                        obj3.graph_by_date(startDate=s, endDate=e, state=args.state, daily=True,
+                                           title=f'Daily graph of last {args.rank} days of {obj3.code[args.state]}')
                     else:
-                        obj3.graph_by_date(
-                            startDate=s, endDate=e, state=args.state)
+                        obj3.graph_by_date(startDate=s, endDate=e, state=args.state,
+                                           title=f'Cumulative graph of last {args.rank} days of {obj3.code[args.state]}')
                 else:
                     if args.daily == 'y':
-                        obj3.tail(num=args.rank, daily=True)
+                        obj3.tail(num=args.rank, daily=True,
+                                  title=f'Daily graph of last {args.rank} days')
                     else:
-                        obj3.tail(num=args.rank)
+                        obj3.tail(
+                            num=args.rank, title=f'Cumulative graph of last {args.rank} days')
             else:
                 print('-r flag is required for tail type graph')
 
@@ -277,19 +294,19 @@ def main():
                 if args.head != None:
                     if args.save != None:
                         df.head(args.head).to_csv(
-                            args.save+f'cumulative-({date[0].replace("/",".")}-{date[1].replace("/",".")})HEAD-{args.head}.csv')
+                            args.save)
                     else:
                         print(df.head(args.head))
                 elif args.tail != None:
                     if args.save != None:
                         df.tail(args.tail).to_csv(
-                            args.save+f'cumulative-({date[0].replace("/",".")}-{date[1].replace("/",".")})TAIL-{args.tail}.csv')
+                            args.save)
                     else:
                         print(df.tail(args.tail))
                 else:
                     if args.save != None:
                         df.to_csv(
-                            args.save+f'cumulative-({date[0].replace("/",".")}-{date[1].replace("/",".")}).csv')
+                            args.save)
                     else:
                         print(df)
             else:
@@ -308,19 +325,19 @@ def main():
                 if args.head != None:
                     if args.save != None:
                         df.head(args.head).to_csv(
-                            args.save+f'count-({date[0].replace("/",".")}-{date[1].replace("/",".")})HEAD-{args.head}.csv')
+                            args.save)
                     else:
                         print(df.head(args.head))
                 elif args.tail != None:
                     if args.save != None:
                         df.tail(args.tail).to_csv(
-                            args.save+f'count-({date[0].replace("/",".")}-{date[1].replace("/",".")})TAIL-{args.tail}.csv')
+                            args.save)
                     else:
                         print(df.tail(args.tail))
                 else:
                     if args.save != None:
                         df.to_csv(
-                            args.save+f'count-({date[0].replace("/",".")}-{date[1].replace("/",".")}).csv')
+                            args.save)
                     else:
                         print(df)
             else:
