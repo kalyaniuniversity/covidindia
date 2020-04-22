@@ -1,5 +1,7 @@
 ﻿![CoronaImage](image/corona.jpg)
 
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/kalyaniuniversity/covidindia?label=Pypi)](https://pypi.org/project/covdata/)
+
 # covdata.covidindia Module
 
 **Description**
@@ -15,8 +17,6 @@ It gathers information from our own maintained database. Database data are colle
 ## Installation
 
      pip install covdata
-
-PyPi Link: [covdata](https://pypi.org/project/covdata/)
 
 ## What's new!!
 
