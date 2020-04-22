@@ -24,6 +24,8 @@ PyPi Link: [covdata](https://pypi.org/project/covdata/)
 - Now user can save csv files with user's own given name when using CLI. See help for --save flag by typing covdata -h
 - User can add custom titles for the graphs.
 
+* User now can see daily data of total confirmed,total recovered,total death in a tabular format for a given state using get_dataset_state method. See examples.
+
 ## Usage
 
      #import module
@@ -61,7 +63,7 @@ Examples are in [github](https://github.com/kalyaniuniversity/covidindia) reposi
      covdata -f Total_Confirmed --options show_data
 
      #save the above data as csv
-     covdata -f Total_Confirmed --options show_data --save PATH\
+     covdata -f Total_Confirmed --options show_data --save \where\to\save\filename.csv
 
      #get demographic overview by place and date
      covdata -p wb -d all --options demography   #please use state code.here 'wb' means 'West bengal'
@@ -73,7 +75,7 @@ Examples are in [github](https://github.com/kalyaniuniversity/covidindia) reposi
      covdata -s mp --options state_dataset       #for madhyapradesh
 
      #get daily count data for any state
-     covdata -s mp --options state_dataset -D y   #daily basis count for madhyaprades.
+     covdata -s mp --options state_dataset -D y   #daily basis count for madhyapradesh.
 
      #get daily count for all states of total confirmed/total recovered/total death
      covdata -f Total_Confirmed --options state_dataset        #Total Confirmed cases for daily basis for all states.
