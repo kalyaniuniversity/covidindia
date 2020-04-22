@@ -25,6 +25,7 @@ PyPi Link: [covdata](https://pypi.org/project/covdata/)
 - User can add custom titles for the graphs.
 
 * User now can see daily data of total confirmed,total recovered,total death in a tabular format for a given state using get_dataset_state method. See examples.
+* Fixed the yticks of Andaman and Nicobar Islands recovery graph.
 
 ## Usage
 

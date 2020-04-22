@@ -338,14 +338,8 @@ class Data(initializer):
             try:
                 try:
                     state = self.code[state]
-                    if 'and' in state.split(' '):
-                        words=[]
-                        for i in state.split(" "):
-                            if i != 'and':
-                                words.append(i.title())
-                            else:
-                                words.append(i)
-                        state=' '.join(words)
+                    
+                    
                 except:
                     if 'and' in state.split(' '):
                         words=[]
@@ -725,7 +719,10 @@ class visualizer(initializer):
         '''
         fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=False)
         fig.set_size_inches(23.5, 15.5)
-        df_max = max(confirmed)
+        c_max = max(confirmed)
+        r_max=max(recovered)
+        d_max=max(death)
+        df_max=max([c_max,r_max,d_max])
         # print(date)
         if date != True:
             x_min = min(x)
@@ -751,6 +748,8 @@ class visualizer(initializer):
         else:
             ax1.plot(x, confirmed, marker='*', color='red')
             ax1.set_ylabel('Confirmed cases', labelpad=20)
+            if df_max != 0:
+                ax1.yaxis.set_ticks(np.arange(0, df_max, df_max/10))
             #ax1.tick_params(axis ='x', rotation = 45)
             ax2.plot(x, recovered, marker='*', color='green')
 
@@ -914,29 +913,32 @@ class visualizer(initializer):
                     try:
                         state = self.code[state]
                     except:
-                        state = state
+                        if 'and' in state.split(' '):
+                            words=[]
+                            for i in state.split(" "):
+                                if i != 'and':
+                                    words.append(i.title())
+                                else:
+                                    words.append(i)
+                            state=' '.join(words)
+                        else:    
+                            state = state.title()
                     if daily == False:
 
-                        date = self.date[self.date[self.date == start].index[0]                                         :self.date[self.date == end].index[0]+1]
-                        confirmed = pd.Series(self.csv_Confirmed[self.csv_Confirmed['STATE/UT'] == state.title(
-                        )].iloc[:, column_dict[start]:column_dict[end]+1].values[0])
-                        recovered = pd.Series(self.csv_recovered[self.csv_Confirmed['STATE/UT'] == state.title(
-                        )].iloc[:, column_dict[start]:column_dict[end]+1].values[0])
-                        death = pd.Series(self.csv_Death[self.csv_Death['STATE/UT'] == state.title(
-                        )].iloc[:, column_dict[start]:column_dict[end]+1].values[0])
+                        date = self.date[self.date[self.date == start].index[0]:self.date[self.date == end].index[0]+1]
+                        confirmed = pd.Series(self.csv_Confirmed[self.csv_Confirmed['STATE/UT'] == state].iloc[:, column_dict[start]:column_dict[end]+1].values[0])
+                        recovered = pd.Series(self.csv_recovered[self.csv_Confirmed['STATE/UT'] == state].iloc[:, column_dict[start]:column_dict[end]+1].values[0])
+                        death = pd.Series(self.csv_Death[self.csv_Death['STATE/UT'] == state].iloc[:, column_dict[start]:column_dict[end]+1].values[0])
                         if title !=None:
                             self.__graph(date, confirmed, recovered, death,title=title)
                         else:
                             self.__graph(date, confirmed, recovered, death)
                     else:
 
-                        date = self.date[self.date[self.date == start].index[0]                                         :self.date[self.date == end].index[0]+1]
-                        confirmed = pd.Series(self.count_conf[self.count_conf['STATE/UT'] == state.title(
-                        )].iloc[:, count_dict[start]:count_dict[end]+1].values[0])
-                        recovered = pd.Series(self.count_recover[self.count_recover['STATE/UT'] == state.title(
-                        )].iloc[:, count_dict[start]:count_dict[end]+1].values[0])
-                        death = pd.Series(self.count_death[self.count_death['STATE/UT'] == state.title(
-                        )].iloc[:, count_dict[start]:count_dict[end]+1].values[0])
+                        date = self.date[self.date[self.date == start].index[0]:self.date[self.date == end].index[0]+1]
+                        confirmed = pd.Series(self.count_conf[self.count_conf['STATE/UT'] == state].iloc[:, count_dict[start]:count_dict[end]+1].values[0])
+                        recovered = pd.Series(self.count_recover[self.count_recover['STATE/UT'] == state].iloc[:, count_dict[start]:count_dict[end]+1].values[0])
+                        death = pd.Series(self.count_death[self.count_death['STATE/UT'] == state].iloc[:, count_dict[start]:count_dict[end]+1].values[0])
                         if title != None:
                             self.__graph(date, confirmed, recovered, death,title=title)
                         else:
