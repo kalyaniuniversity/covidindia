@@ -1,6 +1,9 @@
 ﻿![CoronaImage](image/corona.jpg)
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/kalyaniuniversity/covidindia?label=Pypi)](https://pypi.org/project/covdata/)
+[![PyPI](https://img.shields.io/pypi/v/covdata?label=PyPI)](https://pypi.org/project/covdata/)
+[![dataset](https://img.shields.io/badge/Covid--19-Dataset-yellowgreen)](https://github.com/kalyaniuniversity/COVID-19-Datasets)
+[![Analysis](https://img.shields.io/badge/Covid--19-Analysis-brightgreen)](https://debacharya.com/covid)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/covdata)
 
 # covdata.covidindia Module
 
