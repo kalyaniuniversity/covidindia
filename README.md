@@ -124,6 +124,9 @@ Examples are in [github](https://github.com/kalyaniuniversity/covidindia) reposi
      #if state is not mentioned graph is shown for all states together
      covdata -g graph_by_date -d 25/3/2020-4/4/2020 -D y --options graph
 
+     #latitude vs confirmed cases
+     covdata -g latitude --options graph
+
      #similarly -g tail will work same and please use state code.Terminal feature demonstrates some methods only that are written in --options flag(type 'covdata -h' to see options). -H -T and --save flag can be used for every method that returns a dataframe not a graph.
 
 ## Documentation
