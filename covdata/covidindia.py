@@ -362,8 +362,8 @@ class Data(initializer):
                             flag = 1
                             df = pd.DataFrame(i['districtData'])
                             col_dict={i:j for j,i in enumerate(df.columns)}
-                            df = df.iloc[:,[col_dict['district'],col_dict['confirmed']]]
-                            g=np.append(df.values,[['Total',df.iloc[:,1:].sum()['confirmed']]],axis=0)
+                            df = df.iloc[:,[col_dict['district'],col_dict['confirmed'],col_dict['recovered'],col_dict['deceased']]]
+                            g=np.append(df.values,[['Total',df.iloc[:,1:].sum()['confirmed'],df.iloc[:,1:].sum()['recovered'],df.iloc[:,1:].sum()['deceased']]],axis=0)
                             #array=df.values.append(['Total',df.iloc[:,1:].sum()['confirmed'],df.iloc[:,1:].sum()['deceased'],df.iloc[:,1:].sum()['recovered']])
                             g=pd.DataFrame(g)
                             g.columns=df.columns
@@ -767,7 +767,7 @@ class visualizer(initializer):
             fig.autofmt_xdate()
             ax3.tick_params(axis ='x', rotation = 45)
             if title != None:
-                fig.suptitle(title, fontsize=30)
+                fig.suptitle(title, fontsize=25)
 
         plt.show()
 

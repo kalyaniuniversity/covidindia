@@ -23,12 +23,9 @@ It gathers information from our own maintained database. Database data are colle
 
 ## What's new!!
 
-- Added some functionalities for CLI. See terminal usage.
-- Now user can save csv files with user's own given name when using CLI. See help for --save flag by typing covdata -h
-- User can add custom titles for the graphs.
+- Added all methods to CLI functionality.see terminal usage.
 
-* User now can see daily data of total confirmed,total recovered,total death in a tabular format for a given state using get_dataset_state method. See examples.
-* Fixed the yticks of Andaman and Nicobar Islands recovery graph.
+* For state_dataset and if daily is false then confirmed,recovery and deceased count for each district of mentioned state will be shown.
 
 ## Usage
 
@@ -91,13 +88,19 @@ Examples are in [github](https://github.com/kalyaniuniversity/covidindia) reposi
      covdata -d 11/4/2020 -f Total_Recovered --options count_by_date
 
      #get top n values in India
-     covdata -r 15 -f Total_Confirmed --options rank    #top 10 values of total confirmed cases as cumulative
+     covdata -r top -n 10 -f Total_Confirmed --options rank    #top 10 values of total confirmed cases as cumulative
 
      #get top 10 values of Total Recovered on the basis of daily counts for any date
-     covdata -r 10 -f Total_Recovered -D y --options rank -d 15/3/2020
+     covdata -r top -n 10 -f Total_Recovered -D y --options rank -d 15/3/2020
+
+     #get bottom 10 values of Total Recovered cases as cumulative counts for any date
+     covdata -r bottom -n 10 -f Total_Recovered -D n --options rank -d 15/3/2020
 
      #get top 10 values of Total Recovered cases as cumulative counts for any date
-     covdata -r 10 -f Total_Recovered -D n --options rank -d 15/3/2020
+     covdata -r top -n 10 -f Total_Recovered -D n --options rank -d 15/3/2020
+
+     #get top 10 values of Total Recovered cases as cumulative counts for all dates if date is not mentioned
+     covdata -r top -n 10 -f Total_Recovered -D n --options rank
 
      #get cumulative data between two given dates
      covdata -d 15/3/2020-30/3/2020 -f Total_Recovered --options cumulative_between_date     #Total recovered cumulative data between 15/3/2020 and 30/3/2020
@@ -114,6 +117,12 @@ Examples are in [github](https://github.com/kalyaniuniversity/covidindia) reposi
      #graph of 1st n data of any selected state ,if state not mentioned all together state count will be shown
      covdata -g head -r 15 -D y -s wb --options graph   #plots 1st 15 days daily counts for west bengal
      covdata -g head -r 15 -D n -s wb --options graph   #plots 1st 15 days cumulative counts for west bengal
+
+     #get a daily or cumulative graph between two dates for any states
+     covdata -g graph_by_date -d 25/3/2020-4/4/2020 -D y -s mh --options graph
+
+     #if state is not mentioned graph is shown for all states together
+     covdata -g graph_by_date -d 25/3/2020-4/4/2020 -D y --options graph
 
      #similarly -g tail will work same and please use state code.Terminal feature demonstrates some methods only that are written in --options flag(type 'covdata -h' to see options). -H -T and --save flag can be used for every method that returns a dataframe not a graph.
 

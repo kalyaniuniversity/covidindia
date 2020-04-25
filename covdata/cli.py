@@ -25,12 +25,14 @@ def main():
                         help='process last rows by given number')
     parser.add_argument('-D', '--daily', type=str,
                         help='if y(yes) daily count will be shown')
-    parser.add_argument('-r', '--rank', type=int,
-                        help='top rows will be shown by given value(donot use -r for graph type "whole")')
+    parser.add_argument('-r', '--rank', type=str, choices=['top', 'bottom'],
+                        help='top/bottom data will be shown by given value(donot use -r for graph type "whole")')
+    parser.add_argument('-n', '--number', type=int,
+                        help='No of data points user want to see(donot use -n for graph type "whole")')
     parser.add_argument('--save', type=str,
                         help='save as csv to given path with file name(e.g.D:\path\where\to\filename.csv')
     parser.add_argument('-g', '--graph', type=str,
-                        help='shows different types graph', choices=['whole', 'head', 'tail'])
+                        help='shows different types graph', choices=['whole', 'head', 'tail', 'graph_by_date', 'latitude'])
     parser.add_argument('-f', '--of', type=str,
                         help='process data for selected type', choices=['Total_Confirmed', 'Total_Death',
                                                                         'Total_Recovered'])
@@ -189,31 +191,38 @@ def main():
                 print(df)
     elif args.options == 'rank':
         obj2 = Data(init)
-        num = args.rank
-        if args.of != None:
-            by = args.of.split('_')[0]+f' {args.of.split("_")[1]}'
-            if args.daily == 'y':
-                if args.date != None:
-                    df = obj2.rank(num, by, cumulative=False, date=args.date)
+        num = args.number
+        if args.rank != None:
+            if args.of != None:
+                by = args.of.split('_')[0]+f' {args.of.split("_")[1]}'
+                if args.daily == 'y':
+                    if args.date != None:
+                        df = obj2.rank(num, by, kind=args.rank,
+                                       cumulative=False, date=args.date)
+                    else:
+                        df = obj2.rank(num, by, kind=args.rank,
+                                       cumulative=False)
                 else:
-                    df = obj2.rank(num, by, cumulative=False)
-            else:
-                if args.date != None:
-                    df = obj2.rank(num, by, cumulative=True, date=args.date)
-                else:
-                    df = obj2.rank(num, by, cumulative=True)
+                    if args.date != None:
+                        df = obj2.rank(num, by, kind=args.rank,
+                                       cumulative=True, date=args.date)
+                    else:
+                        df = obj2.rank(num, by, kind=args.rank,
+                                       cumulative=True)
 
-            if args.save != None:
-                df.to_csv(args.save)
+                if args.save != None:
+                    df.to_csv(args.save)
+                else:
+                    print(df)
             else:
-                print(df)
+                raise Exception('Use -f flag for which you want to rank')
         else:
-            raise Exception('Use -f flag for which you want to rank')
+            raise Exception('Please specify the -r flag')
 
     elif args.options == 'graph':
         obj3 = visualizer(init)
         if args.graph == 'whole':
-            if args.rank == None:
+            if args.number == None:
                 if args.state != None:
                     start = '30/1/2020'
                     end = datetime.strftime(datetime.strptime(
@@ -232,56 +241,87 @@ def main():
                     else:
                         obj3.whole(title=f'Cumulative graph for all dates')
             else:
-                print('Do not use -r flag for whole type of graph')
+                print('Do not use -n flag for whole type of graph')
 
         elif args.graph == 'head':
-            if args.rank != None:
+            if args.number != None:
                 if args.state != None:
                     s = '30/01/2020'
                     e = datetime.strftime(datetime.strptime(
-                        s, '%d/%m/%Y')+timedelta(args.rank), '%d/%m/%Y')
+                        s, '%d/%m/%Y')+timedelta(args.number), '%d/%m/%Y')
                     if args.daily == 'y':
 
                         # obj3.head(num=args.rank,daily=True)
                         obj3.graph_by_date(startDate=s, endDate=e, state=args.state, daily=True,
-                                           title=f'Daily graph of 1st {args.rank} days of {obj3.code[args.state]}')
+                                           title=f'Daily graph of 1st {args.number} days of {obj3.code[args.state]}')
                     else:
                         obj3.graph_by_date(startDate=s, endDate=e, state=args.state,
-                                           title=f'Cumulative graph of 1st {args.rank} days of {obj3.code[args.state]}')
+                                           title=f'Cumulative graph of 1st {args.number} days of {obj3.code[args.state]}')
                 else:
                     if args.daily == 'y':
-                        obj3.head(num=args.rank, daily=True,
-                                  title=f'Daily graph of 1st {args.rank} days')
+                        obj3.head(num=args.number, daily=True,
+                                  title=f'Daily graph of 1st {args.number} days for all states')
                     else:
                         obj3.head(
-                            num=args.rank, title=f'Cumulative graph of 1st {args.rank} days')
+                            num=args.number, title=f'Cumulative graph of 1st {args.number} days for all states')
             else:
-                print('-r flag is required for head type graph')
+                print('-n flag is required for head type graph')
 
         elif args.graph == 'tail':
-            if args.rank != None:
+            if args.number != None:
                 if args.state != None:
                     time = confirmed.columns[-1]
                     d = datetime.strptime(time, '%m/%d/%Y')
-                    s = datetime.strftime(d-timedelta(args.rank), '%d/%m/%Y')
+                    s = datetime.strftime(d-timedelta(args.number), '%d/%m/%Y')
                     e = datetime.strftime(d, '%d/%m/%Y')
                     if args.daily == 'y':
 
                         # obj3.head(num=args.rank,daily=True)
                         obj3.graph_by_date(startDate=s, endDate=e, state=args.state, daily=True,
-                                           title=f'Daily graph of last {args.rank} days of {obj3.code[args.state]}')
+                                           title=f'Daily graph of last {args.number} days of {obj3.code[args.state]}')
                     else:
                         obj3.graph_by_date(startDate=s, endDate=e, state=args.state,
-                                           title=f'Cumulative graph of last {args.rank} days of {obj3.code[args.state]}')
+                                           title=f'Cumulative graph of last {args.number} days of {obj3.code[args.state]}')
                 else:
                     if args.daily == 'y':
-                        obj3.tail(num=args.rank, daily=True,
-                                  title=f'Daily graph of last {args.rank} days')
+                        obj3.tail(num=args.number, daily=True,
+                                  title=f'Daily graph of last {args.number} days')
                     else:
                         obj3.tail(
-                            num=args.rank, title=f'Cumulative graph of last {args.rank} days')
+                            num=args.number, title=f'Cumulative graph of last {args.number} days')
             else:
-                print('-r flag is required for tail type graph')
+                print('-n flag is required for tail type graph')
+
+        elif args.graph == 'graph_by_date':
+            if args.date != None:
+                if '-' in args.date:
+                    start = args.date.split('-')[0]
+                    end = args.date.split('-')[1]
+                    if args.state != None:
+
+                        if args.daily == 'y':
+                            obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
+                                               title=f'Daily graph between {start} and {end} of {obj3.code[args.state]}',
+                                               daily=True)
+                        else:
+                            obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
+                                               title=f'Cumulative graph between {start} and {end} of {obj3.code[args.state]}',
+                                               daily=False)
+                    else:
+                        if args.daily == 'y':
+                            obj3.graph_by_date(startDate=start, endDate=end,
+                                               title=f'Daily graph between {start} and {end} of all states',
+                                               daily=True)
+                        else:
+                            obj3.graph_by_date(startDate=start, endDate=end,
+                                               title=f'Cumulative graph between {start} and {end} of all states',
+                                               daily=False)
+                else:
+                    raise Exception('Two Dates must be separated by "-"')
+
+        elif args.graph == 'latitude':
+            obj3.plot_by_latitude(
+                title='Graph between total confirmed vs latitude')
 
     elif args.options == 'cumulative_between_date':
         obj2 = Data(init)
@@ -294,19 +334,19 @@ def main():
                 if args.head != None:
                     if args.save != None:
                         df.head(args.head).to_csv(
-                            args.save)
+                            args.save+f'cumulative-({date[0].replace("/",".")}-{date[1].replace("/",".")})HEAD-{args.head}.csv')
                     else:
                         print(df.head(args.head))
                 elif args.tail != None:
                     if args.save != None:
                         df.tail(args.tail).to_csv(
-                            args.save)
+                            args.save+f'cumulative-({date[0].replace("/",".")}-{date[1].replace("/",".")})TAIL-{args.tail}.csv')
                     else:
                         print(df.tail(args.tail))
                 else:
                     if args.save != None:
                         df.to_csv(
-                            args.save)
+                            args.save+f'cumulative-({date[0].replace("/",".")}-{date[1].replace("/",".")}).csv')
                     else:
                         print(df)
             else:
@@ -325,19 +365,19 @@ def main():
                 if args.head != None:
                     if args.save != None:
                         df.head(args.head).to_csv(
-                            args.save)
+                            args.save+f'count-({date[0].replace("/",".")}-{date[1].replace("/",".")})HEAD-{args.head}.csv')
                     else:
                         print(df.head(args.head))
                 elif args.tail != None:
                     if args.save != None:
                         df.tail(args.tail).to_csv(
-                            args.save)
+                            args.save+f'count-({date[0].replace("/",".")}-{date[1].replace("/",".")})TAIL-{args.tail}.csv')
                     else:
                         print(df.tail(args.tail))
                 else:
                     if args.save != None:
                         df.to_csv(
-                            args.save)
+                            args.save+f'count-({date[0].replace("/",".")}-{date[1].replace("/",".")}).csv')
                     else:
                         print(df)
             else:
