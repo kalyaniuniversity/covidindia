@@ -115,8 +115,8 @@ Examples are in [github](https://github.com/kalyaniuniversity/covidindia) reposi
      covdata -g whole -D y -s wb --options graph    #plots the daily graph of west bengal
 
      #graph of 1st n data of any selected state ,if state not mentioned all together state count will be shown
-     covdata -g head -r 15 -D y -s wb --options graph   #plots 1st 15 days daily counts for west bengal
-     covdata -g head -r 15 -D n -s wb --options graph   #plots 1st 15 days cumulative counts for west bengal
+     covdata -g head -n 15 -D y -s wb --options graph   #plots 1st 15 days daily counts for west bengal
+     covdata -g tail -n 15 -D n -s wb --options graph   #plots last 15 days cumulative counts for west bengal
 
      #get a daily or cumulative graph between two dates for any states
      covdata -g graph_by_date -d 25/3/2020-4/4/2020 -D y -s mh --options graph
@@ -128,6 +128,10 @@ Examples are in [github](https://github.com/kalyaniuniversity/covidindia) reposi
      covdata -g latitude --options graph
 
      #similarly -g tail will work same and please use state code.Terminal feature demonstrates some methods only that are written in --options flag(type 'covdata -h' to see options). -H -T and --save flag can be used for every method that returns a dataframe not a graph.
+
+## Sample Graph
+
+![Daily Count of West Bengal](image/graph.png)
 
 ## Documentation
 
