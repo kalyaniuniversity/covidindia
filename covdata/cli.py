@@ -13,6 +13,8 @@ from datetime import datetime, timedelta
 def main():
     parser = argparse.ArgumentParser(
         description='Process some output of Covid-19 data in india.')
+    parser.add_argument('--start', type=str,
+                        help='helps to start a covdata server')
     parser.add_argument('-d', '--date', type=str,
                         help='takes date.For date range use two dates separated by "-"')
     parser.add_argument('-s', '--state', type=str,
@@ -36,7 +38,7 @@ def main():
     parser.add_argument('-f', '--of', type=str,
                         help='process data for selected type', choices=['Total_Confirmed', 'Total_Death',
                                                                         'Total_Recovered'])
-    parser.add_argument('--options', type=str, required=True,
+    parser.add_argument('--options', type=str,
                         help='operations user want to do', choices=['show_data', 'demography',
                                                                     'state_dataset', 'data_by_date',
                                                                     'count_by_date', 'rank', 'cumulative_between_date',
@@ -46,6 +48,7 @@ def main():
     args = parser.parse_args()
     init = initializer(silent=True)
     confirmed = init.show_data(of='Confirmed')
+
     if args.options == 'show_data':
         of = args.of
         if '_' in of:
@@ -333,20 +336,17 @@ def main():
                     startDate=date[0], endDate=date[1], by=of)
                 if args.head != None:
                     if args.save != None:
-                        df.head(args.head).to_csv(
-                            args.save+f'cumulative-({date[0].replace("/",".")}-{date[1].replace("/",".")})HEAD-{args.head}.csv')
+                        df.head(args.head).to_csv(args.save)
                     else:
                         print(df.head(args.head))
                 elif args.tail != None:
                     if args.save != None:
-                        df.tail(args.tail).to_csv(
-                            args.save+f'cumulative-({date[0].replace("/",".")}-{date[1].replace("/",".")})TAIL-{args.tail}.csv')
+                        df.tail(args.tail).to_csv(args.save)
                     else:
                         print(df.tail(args.tail))
                 else:
                     if args.save != None:
-                        df.to_csv(
-                            args.save+f'cumulative-({date[0].replace("/",".")}-{date[1].replace("/",".")}).csv')
+                        df.to_csv(args.save)
                     else:
                         print(df)
             else:
@@ -364,26 +364,26 @@ def main():
                     startDate=date[0], endDate=date[1], by=of)
                 if args.head != None:
                     if args.save != None:
-                        df.head(args.head).to_csv(
-                            args.save+f'count-({date[0].replace("/",".")}-{date[1].replace("/",".")})HEAD-{args.head}.csv')
+                        df.head(args.head).to_csv(args.save)
                     else:
                         print(df.head(args.head))
                 elif args.tail != None:
                     if args.save != None:
-                        df.tail(args.tail).to_csv(
-                            args.save+f'count-({date[0].replace("/",".")}-{date[1].replace("/",".")})TAIL-{args.tail}.csv')
+                        df.tail(args.tail).to_csv(args.save)
                     else:
                         print(df.tail(args.tail))
                 else:
                     if args.save != None:
-                        df.to_csv(
-                            args.save+f'count-({date[0].replace("/",".")}-{date[1].replace("/",".")}).csv')
+                        df.to_csv(args.save)
                     else:
                         print(df)
             else:
                 print('Give to dates separated by "-" (eg. 05/02/2020-06/03/2020)')
         else:
             print('-f flag should be given')
+
+    elif (args.options == None) & (args.start == 'server'):
+        from .SERVER import server
 
 
 if __name__ == '__main__':

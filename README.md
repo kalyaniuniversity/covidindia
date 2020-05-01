@@ -23,9 +23,11 @@ It gathers information from our own maintained database. Database data are colle
 
 ## What's new!!
 
-- Added all methods to CLI functionality.see terminal usage.
+- Now user can up a server where user can see some main features of covdata package. In server user can see data with an interactive way.
 
-* For state_dataset and if daily is false then confirmed,recovery and deceased count for each district of mentioned state will be shown.
+## Up the server
+
+     covdata --start server
 
 ## Usage
 

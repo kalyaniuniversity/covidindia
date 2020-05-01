@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" class="animated fadeIn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="shortcut icon"
+      type="image/png"
+      href="https://pngimg.com/uploads/coronavirus/coronavirus_PNG46.png"
+    />
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css"
+    />
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="{{url_for('static', filename='main.js')}}"></script>
+    <title>Covidindia Server</title>
+  </head>
+  <body>
+    <nav>
+      <ul>
+        <li>
+          <a href="/">Home</a>
+        </li>
+        <li>
+          <a href="{{ url_for('state')}}">Data by State</a>
+        </li>
+        <li>
+          <a href="{{ url_for('demography')}}">Demography</a>
+        </li>
+        <li>
+          <a href="{{ url_for('rank')}}">Ranking</a>
+        </li>
+        <li>
+          <a href="{{ url_for('graph')}}">Graph Plot</a>
+        </li>
+      </ul>
+    </nav>
+    <h2>Shows the collected Data</h2>
+    <!-- <label for="sheet-content" id="sheet">Choose an option:</label> -->
+
+    <select id="sheet-content">
+      <option value="total confirmed">--Select-options--</option>
+      <option value="total confirmed">Total Confirmed</option>
+      <option value="total recovered">Total Recovered</option>
+      <option value="total deceased">Total Death</option>
+    </select>
+
+    <button type="button" class="btn" onclick="GetSelectedText()">
+      Submit
+    </button>
+    <div id="main-container">
+      <div id="data_show"></div>
+    </div>
+  </body>
+</html>

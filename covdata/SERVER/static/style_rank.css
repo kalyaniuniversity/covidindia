@@ -1,0 +1,95 @@
+body {
+  background: rgb(197, 197, 197);
+}
+
+th,
+td,
+p,
+input {
+  font: 15px "Segoe UI";
+}
+table {
+  background-color: grey;
+}
+table,
+th,
+td {
+  border: solid 1px #ddd;
+  border-collapse: collapse;
+  padding: 2px 15px;
+  text-align: center;
+}
+th {
+  font-weight: bold;
+}
+ul {
+  margin: auto;
+  overflow: auto;
+  justify-content: space-around;
+  display: flex;
+}
+
+nav {
+  text-align: center;
+  background-color: seagreen;
+  border-radius: 5px;
+  margin-bottom: 50px;
+}
+a:hover {
+  color: white;
+}
+/* li:hover {
+  border-bottom: 3px solid blue;
+} */
+
+ul li {
+  float: left;
+  padding: 13px 20px;
+  text-decoration: none;
+  list-style: none;
+  /* background-color: saddlebrown; */
+}
+
+ul li a {
+  text-decoration: none;
+}
+h2 {
+  clear: both;
+}
+
+#sheet-content {
+  border-radius: 5px;
+}
+
+.btn {
+  border-radius: 5px;
+}
+#main-container {
+  text-align: center;
+  margin: auto;
+  width: fit-content;
+  border-radius: 7px;
+}
+#data_show {
+  border-radius: 7px;
+  box-shadow: 3px 14px 8px rgb(22, 22, 22);
+}
+input {
+  border-radius: 5px;
+  padding: 0.0000003px;
+  height: 16px;
+  width: 99px;
+  border: 29px black;
+  text-align: center;
+}
+select {
+  border-radius: 5px;
+}
+p {
+  color: blueviolet;
+}
+li.active {
+  border-bottom: 1.9px solid blue;
+  background-color: rgb(124, 153, 131);
+  border-radius: 5px;
+}
