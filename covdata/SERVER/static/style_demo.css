@@ -3,13 +3,11 @@ body {
   margin-bottom: 25px;
 }
 table {
-  background-color: grey;
+  background-color: rgb(192, 197, 193);
 }
-th,
-td,
-p,
-input {
-  font: 15px "Segoe UI";
+#data_show th,
+td p {
+  font: 18px "Segoe UI";
 }
 table,
 th,
@@ -93,7 +91,7 @@ p {
 }
 #data_show {
   border-radius: 7px;
-  box-shadow: 3px 14px 8px rgb(22, 22, 22);
+  box-shadow: 4px 9px 12px rgb(53, 53, 53);
 }
 li.active {
   border-bottom: 1.9px solid blue;

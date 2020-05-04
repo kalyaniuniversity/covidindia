@@ -25,9 +25,13 @@ It gathers information from our own maintained database. Database data are colle
 
 - Now user can up a server where user can see some main features of covdata package. In server user can see data with an interactive way.
 
+* User now can define own chosen port to which server will start.
+* Some problems on graph plot on server is fixed.
+
 ## Up the server
 
-     covdata --start server
+     covdata cov-server   #to start the server with default port
+     covdata cov-server -b :8000      #to bind the port at 8000
 
 ## Usage
 

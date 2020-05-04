@@ -2,14 +2,12 @@ body {
   background: rgb(197, 197, 197);
 }
 
-th,
-td,
-p,
-input {
-  font: 15px "Segoe UI";
+#data_show th,
+td p {
+  font: 18px "Segoe UI";
 }
 table {
-  background-color: grey;
+  background-color: rgb(192, 197, 193);
 }
 table,
 th,
@@ -72,7 +70,7 @@ h2 {
 }
 #data_show {
   border-radius: 7px;
-  box-shadow: 3px 14px 8px rgb(22, 22, 22);
+  box-shadow: 4px 9px 12px rgb(53, 53, 53);
 }
 input {
   border-radius: 5px;

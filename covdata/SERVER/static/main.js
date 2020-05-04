@@ -54,7 +54,8 @@ function GetSelectedText() {
       console.log(Object.values(df[0]));
       divShowData.innerHTML = "";
       divShowData.appendChild(table);
-      divShowData.style.width = "auto";
+      divShowData.style.width = "180vh";
+      divShowData.style.height = "90vh";
       // divShowData.style.background = "grey";
       divShowData.style.overflow = "auto";
       divShowData.style.marginTop = "20px";

@@ -14,7 +14,7 @@ import json
 
 
 class initializer():
-    def __init__(self,silent=False):
+    def __init__(self, silent=False):
         '''
         This is a class that will scrap the data from source upto the previous day of
         day of using that package.
@@ -54,7 +54,7 @@ class initializer():
 
     # call this method to see all collected datasets
     # it returns a list of dataframes
-    def show_data(self,of):
+    def show_data(self, of):
         '''
         This method only assembles the collected data 
 
@@ -66,13 +66,14 @@ class initializer():
         '''
         if of.lower() == 'confirmed':
             return self.csv_Confirmed
-        elif of.lower() =='recovered':
+        elif of.lower() == 'recovered':
             return self.csv_recovered
-        elif of.lower() =='death':
+        elif of.lower() == 'death':
             return self.csv_Death
 
+
 class Demographic_overview(initializer):
-    def __init__(self,init,silent=False):
+    def __init__(self, init, silent=False):
         '''
         This Demographic_overview class has the power of filtering in terms of state,
         district,city,date or range of date
@@ -86,8 +87,13 @@ class Demographic_overview(initializer):
             print('Collecting Data.....')
         json_url = urllib.request.urlopen(
             'https://api.covid19india.org/raw_data.json')
-        data = json.loads(json_url.read())
-        df = pd.DataFrame(data['raw_data'])
+        json_url_2 = urllib.request.urlopen(
+            'https://api.covid19india.org/raw_data3.json')
+        data_1 = json.loads(json_url.read())
+        data_2 = json.loads(json_url_2.read())
+        df_1 = pd.DataFrame(data_1['raw_data'])
+        df_2 = pd.DataFrame(data_2['raw_data'])
+        df = pd.concat([df_1, df_2])
         df = df.replace('', 'Unknown')
         df = df[(df['dateannounced'] != 'Unknown') & (
             df['dateannounced'] != datetime.strftime(datetime.now(), '%d/%m/%Y'))]
@@ -99,13 +105,14 @@ class Demographic_overview(initializer):
                 index.append('Unknown')
         df.dateannounced = index
         self.raw = df
-        self.code=init.code
-        self.district=np.unique([i for i in self.raw['detecteddistrict']])
-        self.city=np.unique([i for i in self.raw['detectedcity']])
+        self.code = init.code
+        self.state = np.unique([i for i in self.raw['detectedstate']])
+        self.district = np.unique([i for i in self.raw['detecteddistrict']])
+        self.city = np.unique([i for i in self.raw['detectedcity']])
         if silent == False:
             print('All Done.')
 
-    def demography(self,place='all',date='all'):
+    def demography(self, place='all', date='all'):
         '''
         This method can show the male and female count of confirmed cases for a state or a district or
         a city for a given date of range of date.        
@@ -131,148 +138,211 @@ class Demographic_overview(initializer):
             dataframe consists of male female counts of confirmed cases for given date and place.
 
         '''
-        #dateDict=dict(tuple(self.raw.groupby('dateannounced')))
+        # dateDict=dict(tuple(self.raw.groupby('dateannounced')))
         if place != 'all':
             if date != 'all':
                 if '-' in date:
-                    date=date.split('-')
-                    date=[datetime.strptime(i,'%d/%m/%Y') for i in date]
+                    date = date.split('-')
+                    date = [datetime.strptime(i, '%d/%m/%Y') for i in date]
                     try:
-                        try:
-                            state=self.code[place]
-                            
-                        except:
-                            state=place.title()
-                            
-                        state_filter=self.raw[self.raw['detectedstate']==state]
-                        date_filter=state_filter[(state_filter['dateannounced']>=date[0]) & (state_filter['dateannounced']<=date[1])]
-                        if date_filter.empty == False:
-                            frame=pd.concat([date_filter['detecteddistrict'],date_filter['detectedcity'],date_filter['dateannounced'],date_filter['gender']],axis=1)
-                            frame=frame.groupby(['detecteddistrict','detectedcity','dateannounced'])['gender'].value_counts()
-                            return pd.DataFrame({'count':frame})
-                        else:
-                            raise Exception(f'No Data found between {datetime.strftime(date[0],"%d/%m/%Y")} and {datetime.strftime(date[1],"%d/%m/%Y")}')
+                        state = self.code[place]
+
                     except:
-                        if place.title() in self.district:
-                            district_filter=self.raw[self.raw['detecteddistrict']==place.title()]
-                            date_filter=district_filter[(district_filter['dateannounced']>=date[0]) & (district_filter['dateannounced']<=date[1])]
-                            if date_filter.empty == False:
-                                frame=pd.concat([date_filter['detectedcity'],date_filter['dateannounced'],date_filter['gender']],axis=1)
-                                #print(frame)
-                                frame=frame.groupby(['detectedcity','dateannounced'])['gender'].value_counts()
-                                return pd.DataFrame({'count':frame})
-                            else:
-                                raise Exception(f'No Data found between {datetime.strftime(date[0],"%d/%m/%Y")} and {datetime.strftime(date[1],"%d/%m/%Y")}')
-                        elif place.title() in self.city:
-                            city_filter=self.raw[self.raw['detectedcity']==place.title()]
-                            date_filter=city_filter[(city_filter['dateannounced']>=date[0]) & (city_filter['dateannounced']<=date[1])]
-                            if date_filter.empty == False:
-                                frame=pd.concat([date_filter['dateannounced'],date_filter['gender']],axis=1)
-                                #print(frame)
-                                frame=frame.groupby(['dateannounced'])['gender'].value_counts()
-                                return pd.DataFrame({'count':frame})
-                            else:
-                                raise Exception(f'No Data found between {datetime.strftime(date[0],"%d/%m/%Y")} and {datetime.strftime(date[1],"%d/%m/%Y")}')
+                        if 'and' in place.split(' '):
+                            words = []
+                            for i in place.split(" "):
+                                if i != 'and':
+                                    words.append(i.title())
+                                else:
+                                    words.append(i)
+                            state = ' '.join(words)
+                        else:
+                            state = place.title()
+                    if state in self.state:
+                        state_filter = self.raw[self.raw['detectedstate'] == state]
+                        date_filter = state_filter[(state_filter['dateannounced'] >= date[0]) & (
+                            state_filter['dateannounced'] <= date[1])]
+                        if date_filter.empty == False:
+                            frame = pd.concat([date_filter['detecteddistrict'], date_filter['detectedcity'],
+                                               date_filter['dateannounced'], date_filter['gender']], axis=1)
+                            frame = frame.groupby(['detecteddistrict', 'detectedcity', 'dateannounced'])[
+                                'gender'].value_counts()
+                            return pd.DataFrame({'count': frame})
+                        else:
+                            raise Exception(
+                                f'No Data found between {datetime.strftime(date[0],"%d/%m/%Y")} and {datetime.strftime(date[1],"%d/%m/%Y")}')
+                    elif place.title() in self.district:
+                        district_filter = self.raw[self.raw['detecteddistrict'] == place.title(
+                        )]
+                        date_filter = district_filter[(district_filter['dateannounced'] >= date[0]) & (
+                            district_filter['dateannounced'] <= date[1])]
+                        if date_filter.empty == False:
+                            frame = pd.concat(
+                                [date_filter['detectedcity'], date_filter['dateannounced'], date_filter['gender']], axis=1)
+                            # print(frame)
+                            frame = frame.groupby(['detectedcity', 'dateannounced'])[
+                                'gender'].value_counts()
+                            return pd.DataFrame({'count': frame})
+                        else:
+                            raise Exception(
+                                f'No Data found between {datetime.strftime(date[0],"%d/%m/%Y")} and {datetime.strftime(date[1],"%d/%m/%Y")}')
+                    elif place.title() in self.city:
+                        city_filter = self.raw[self.raw['detectedcity'] == place.title(
+                        )]
+                        date_filter = city_filter[(city_filter['dateannounced'] >= date[0]) & (
+                            city_filter['dateannounced'] <= date[1])]
+                        if date_filter.empty == False:
+                            frame = pd.concat(
+                                [date_filter['dateannounced'], date_filter['gender']], axis=1)
+                            # print(frame)
+                            frame = frame.groupby(['dateannounced'])[
+                                'gender'].value_counts()
+                            return pd.DataFrame({'count': frame})
+                        else:
+                            raise Exception(
+                                f'No Data found between {datetime.strftime(date[0],"%d/%m/%Y")} and {datetime.strftime(date[1],"%d/%m/%Y")}')
                 else:
-                    date=datetime.strptime(date,'%d/%m/%Y')
+                    date = datetime.strptime(date, '%d/%m/%Y')
                     try:
-                        try:
-                            state=self.code[place]
-                            
-                        except:
-                            state=place.title()
-                            
-                        state_filter=self.raw[self.raw['detectedstate']==state]
-                        date_filter=state_filter[state_filter['dateannounced']==date]
-                        if date_filter.empty == False:
-                            
-                            frame=pd.concat([date_filter['detecteddistrict'],date_filter['detectedcity'],date_filter['dateannounced'],date_filter['gender']],axis=1)
-                            frame=frame.groupby(['detecteddistrict','detectedcity','dateannounced'])['gender'].value_counts()
-                            return pd.DataFrame({'count':frame})
-                        else:
-                            print(f'No Data found for {datetime.strftime(date,"%d/%m/%Y")}')
+                        state = self.code[place]
+
                     except:
-                        if place.title() in self.district:
-                            district_filter=self.raw[self.raw['detecteddistrict']==place.title()]
-                            date_filter=district_filter[district_filter['dateannounced']==date]
-                            if date_filter.empty == False:
-                                frame=pd.concat([date_filter['detectedcity'],date_filter['dateannounced'],date_filter['gender']],axis=1)
-                                #print(frame)
-                                frame=frame.groupby(['detectedcity','dateannounced'])['gender'].value_counts()
-                                return pd.DataFrame({'count':frame})
-                            else:
-                                raise Exception(f'No Data found for {datetime.strftime(date,"%d/%m/%Y")}')
-                        elif place.title() in self.city:
-                            city_filter=self.raw[self.raw['detectedcity']==place.title()]
-                            date_filter=city_filter[city_filter['dateannounced']==date]
-                            if date_filter.empty == False:
-                                frame=pd.concat([date_filter['dateannounced'],date_filter['gender']],axis=1)
-                                #print(frame)
-                                frame=frame.groupby(['dateannounced'])['gender'].value_counts()
-                                return pd.DataFrame({'count':frame})
-                            else:
-                                raise Exception(f'No Data found for {datetime.strftime(date,"%d/%m/%Y")}')
+                        if 'and' in place.split(' '):
+                            words = []
+                            for i in place.split(" "):
+                                if i != 'and':
+                                    words.append(i.title())
+                                else:
+                                    words.append(i)
+                            state = ' '.join(words)
+                        else:
+                            state = place.title()
+                    if state in self.state:
+                        state_filter = self.raw[self.raw['detectedstate'] == state]
+                        date_filter = state_filter[state_filter['dateannounced'] == date]
+                        if date_filter.empty == False:
+
+                            frame = pd.concat([date_filter['detecteddistrict'], date_filter['detectedcity'],
+                                               date_filter['dateannounced'], date_filter['gender']], axis=1)
+                            frame = frame.groupby(['detecteddistrict', 'detectedcity', 'dateannounced'])[
+                                'gender'].value_counts()
+                            return pd.DataFrame({'count': frame})
+                        else:
+                            print(
+                                f'No Data found for {datetime.strftime(date,"%d/%m/%Y")}')
+                    elif place.title() in self.district:
+                        district_filter = self.raw[self.raw['detecteddistrict'] == place.title(
+                        )]
+                        date_filter = district_filter[district_filter['dateannounced'] == date]
+                        if date_filter.empty == False:
+                            frame = pd.concat(
+                                [date_filter['detectedcity'], date_filter['dateannounced'], date_filter['gender']], axis=1)
+                            # print(frame)
+                            frame = frame.groupby(['detectedcity', 'dateannounced'])[
+                                'gender'].value_counts()
+                            return pd.DataFrame({'count': frame})
+                        else:
+                            raise Exception(
+                                f'No Data found for {datetime.strftime(date,"%d/%m/%Y")}')
+                    elif place.title() in self.city:
+                        city_filter = self.raw[self.raw['detectedcity'] == place.title(
+                        )]
+                        date_filter = city_filter[city_filter['dateannounced'] == date]
+                        if date_filter.empty == False:
+                            frame = pd.concat(
+                                [date_filter['dateannounced'], date_filter['gender']], axis=1)
+                            # print(frame)
+                            frame = frame.groupby(['dateannounced'])[
+                                'gender'].value_counts()
+                            return pd.DataFrame({'count': frame})
+                        else:
+                            raise Exception(
+                                f'No Data found for {datetime.strftime(date,"%d/%m/%Y")}')
             else:
                 try:
-                    try:
-                        state=self.code[place]
-                        
-                    except:
-                        state=place.title()
-                        
-                    state_filter=self.raw[self.raw['detectedstate']==state]
+                    state = self.code[place]
+
+                except:
+                    if 'and' in place.split(' '):
+                        words = []
+                        for i in place.split(" "):
+                            if i != 'and':
+                                words.append(i.title())
+                            else:
+                                words.append(i)
+                        state = ' '.join(words)
+                    else:
+                        state = place.title()
+                if state in self.state:
+                    state_filter = self.raw[self.raw['detectedstate'] == state]
                     if state_filter.empty == False:
-                            frame=pd.concat([state_filter['detecteddistrict'],state_filter['detectedcity'],state_filter['dateannounced'],state_filter['gender']],axis=1)
-                            frame=frame.groupby(['detecteddistrict','detectedcity','dateannounced'])['gender'].value_counts()
-                            return pd.DataFrame({'count':frame})
+                        frame = pd.concat([state_filter['detecteddistrict'], state_filter['detectedcity'],
+                                           state_filter['dateannounced'], state_filter['gender']], axis=1)
+                        frame = frame.groupby(['detecteddistrict', 'detectedcity', 'dateannounced'])[
+                            'gender'].value_counts()
+                        return pd.DataFrame({'count': frame})
                     else:
                         raise Exception(f'No Data found')
-                except:
-                    if place.title() in self.district:
-                        district_filter=self.raw[self.raw['detecteddistrict']==place.title()]
-                        if district_filter.empty == False:
-                            frame=pd.concat([district_filter['detectedcity'],district_filter['dateannounced'],district_filter['gender']],axis=1)
-                            #print(frame)
-                            frame=frame.groupby(['detectedcity','dateannounced'])['gender'].value_counts()
-                            return pd.DataFrame({'count':frame})
-                        else:
-                            raise Exception(f'No Data found')
-                    elif place.title() in self.city:
-                        city_filter=self.raw[self.raw['detectedcity']==place.title()]
-                        if city_filter.empty == False:
-                            frame=pd.concat([city_filter['dateannounced'],city_filter['gender']],axis=1)
-                            #print(frame)
-                            frame=frame.groupby(['dateannounced'])['gender'].value_counts()
-                            return pd.DataFrame({'count':frame})
-                        else:
-                            raise Exception(f'No Data found')
+                elif place.title() in self.district:
+                    district_filter = self.raw[self.raw['detecteddistrict'] == place.title(
+                    )]
+                    if district_filter.empty == False:
+                        frame = pd.concat(
+                            [district_filter['detectedcity'], district_filter['dateannounced'], district_filter['gender']], axis=1)
+                        # print(frame)
+                        frame = frame.groupby(['detectedcity', 'dateannounced'])[
+                            'gender'].value_counts()
+                        return pd.DataFrame({'count': frame})
+                    else:
+                        raise Exception(f'No Data found')
+                elif place.title() in self.city:
+                    city_filter = self.raw[self.raw['detectedcity']
+                                           == place.title()]
+                    if city_filter.empty == False:
+                        frame = pd.concat(
+                            [city_filter['dateannounced'], city_filter['gender']], axis=1)
+                        # print(frame)
+                        frame = frame.groupby(['dateannounced'])[
+                            'gender'].value_counts()
+                        return pd.DataFrame({'count': frame})
+                    else:
+                        raise Exception(f'No Data found')
         else:
             if date == 'all':
-                frame=pd.concat([self.raw['detectedstate'],self.raw['dateannounced'],self.raw['gender']],axis=1)
-                frame=frame.groupby(['detectedstate','dateannounced'])['gender'].value_counts()
-                return pd.DataFrame({'count':frame})   
+                frame = pd.concat(
+                    [self.raw['detectedstate'], self.raw['dateannounced'], self.raw['gender']], axis=1)
+                frame = frame.groupby(['detectedstate', 'dateannounced'])[
+                    'gender'].value_counts()
+                return pd.DataFrame({'count': frame})
             else:
                 if '-' in date:
-                    date=date.split('-')
-                    date=[datetime.strptime(i,'%d/%m/%Y') for i in date]
-                    date_filter=self.raw[(self.raw['dateannounced']>=date[0]) & (self.raw['dateannounced']<=date[1])]
+                    date = date.split('-')
+                    date = [datetime.strptime(i, '%d/%m/%Y') for i in date]
+                    date_filter = self.raw[(self.raw['dateannounced'] >= date[0]) & (
+                        self.raw['dateannounced'] <= date[1])]
                     if date_filter.empty == False:
-                        frame=pd.concat([date_filter['detectedstate'],date_filter['dateannounced'],date_filter['gender']],axis=1)
-                        frame=frame.groupby(['detectedstate','dateannounced'])['gender'].value_counts()
-                        return pd.DataFrame({'count':frame})
+                        frame = pd.concat(
+                            [date_filter['detectedstate'], date_filter['dateannounced'], date_filter['gender']], axis=1)
+                        frame = frame.groupby(['detectedstate', 'dateannounced'])[
+                            'gender'].value_counts()
+                        return pd.DataFrame({'count': frame})
                     else:
-                        raise Exception(f'No Data found between {datetime.strftime(date[0],"%d/%m/%Y")} and {datetime.strftime(date[1],"%d/%m/%Y")}')
+                        raise Exception(
+                            f'No Data found between {datetime.strftime(date[0],"%d/%m/%Y")} and {datetime.strftime(date[1],"%d/%m/%Y")}')
                 else:
-                    date=datetime.strptime(date,'%d/%m/%Y')
-                    date_filter=self.raw[self.raw['dateannounced']==date]
+                    date = datetime.strptime(date, '%d/%m/%Y')
+                    date_filter = self.raw[self.raw['dateannounced'] == date]
                     if date_filter.empty == False:
-                        frame=pd.concat([date_filter['detectedstate'],date_filter['dateannounced'],date_filter['gender']],axis=1)
-                        frame=frame.groupby(['detectedstate','dateannounced'])['gender'].value_counts()
-                        return pd.DataFrame({'count':frame})
+                        frame = pd.concat(
+                            [date_filter['detectedstate'], date_filter['dateannounced'], date_filter['gender']], axis=1)
+                        frame = frame.groupby(['detectedstate', 'dateannounced'])[
+                            'gender'].value_counts()
+                        return pd.DataFrame({'count': frame})
                     else:
-                        raise Exception(f'No Data found for {datetime.strftime(date,"%d/%m/%Y")}')
-                    
-                                
+                        raise Exception(
+                            f'No Data found for {datetime.strftime(date,"%d/%m/%Y")}')
+
+
 # Data class can apply various filters on collected datasets(Confirmed,Recovered,Deceased)
 # based on User's choice
 class Data(initializer):
@@ -293,7 +363,7 @@ class Data(initializer):
                        'Total Recovered', 'Total Death']
         return new
 
-    def get_dataset_state(self, state='Whole',daily=False):
+    def get_dataset_state(self, state='Whole', daily=False):
         '''
         this method of Data class will allow user to get cumulative counts of a particular 
         state.
@@ -319,7 +389,7 @@ class Data(initializer):
             Otherwise for daily is True it will return dictionary of dataframes having confirmed,recovered and death cases for all states.
             if state is mentioned and daily is true then it will return a dataframe consisting all dates showing daily confirmed,daily recovered and
             daily death.
-            
+
             if state is mentioned and daily is False then a dataframe will be returned consisting of name of districts of that states along with only 
             confirmed data.
 
@@ -332,26 +402,25 @@ class Data(initializer):
                               'Total Recovered', 'Total Death']
                 return df.drop(columns=['CODE'])
             else:
-                return {'Confirmed':self.count_conf,'Recovered':self.count_recover,
-                        'Death':self.count_death}
+                return {'Confirmed': self.count_conf, 'Recovered': self.count_recover,
+                        'Death': self.count_death}
         else:
             try:
                 try:
                     state = self.code[state]
-                    
-                    
+
                 except:
                     if 'and' in state.split(' '):
-                        words=[]
+                        words = []
                         for i in state.split(" "):
                             if i != 'and':
                                 words.append(i.title())
                             else:
                                 words.append(i)
-                        state=' '.join(words)
-                    else:    
+                        state = ' '.join(words)
+                    else:
                         state = state.title()
-                
+
                 if daily != True:
                     flag = 0
                     json_url = urllib.request.urlopen(
@@ -361,21 +430,27 @@ class Data(initializer):
                         if i['state'] == state:
                             flag = 1
                             df = pd.DataFrame(i['districtData'])
-                            col_dict={i:j for j,i in enumerate(df.columns)}
-                            df = df.iloc[:,[col_dict['district'],col_dict['confirmed'],col_dict['recovered'],col_dict['deceased']]]
-                            g=np.append(df.values,[['Total',df.iloc[:,1:].sum()['confirmed'],df.iloc[:,1:].sum()['recovered'],df.iloc[:,1:].sum()['deceased']]],axis=0)
-                            #array=df.values.append(['Total',df.iloc[:,1:].sum()['confirmed'],df.iloc[:,1:].sum()['deceased'],df.iloc[:,1:].sum()['recovered']])
-                            g=pd.DataFrame(g)
-                            g.columns=df.columns
+                            col_dict = {i: j for j, i in enumerate(df.columns)}
+                            df = df.iloc[:, [
+                                col_dict['district'], col_dict['confirmed'], col_dict['recovered'], col_dict['deceased']]]
+                            g = np.append(df.values, [['Total', df.iloc[:, 1:].sum()['confirmed'], df.iloc[:, 1:].sum()[
+                                          'recovered'], df.iloc[:, 1:].sum()['deceased']]], axis=0)
+                            # array=df.values.append(['Total',df.iloc[:,1:].sum()['confirmed'],df.iloc[:,1:].sum()['deceased'],df.iloc[:,1:].sum()['recovered']])
+                            g = pd.DataFrame(g)
+                            g.columns = df.columns
                             return g
                             break
                     if flag == 0:
                         print('No Confirmed Data in', state)
                 else:
-                    confirmed=self.count_conf[self.count_conf['STATE/UT']==state].iloc[:,1:].T
-                    recovered=self.count_recover[self.count_recover['STATE/UT']==state].iloc[:,1:].T
-                    death=self.count_death[self.count_death['STATE/UT']==state].iloc[:,1:].T
-                    district_dict={'Confirmed':confirmed[confirmed.columns[0]],'Recovered':recovered[recovered.columns[0]],'Death':death[death.columns[0]]}
+                    confirmed = self.count_conf[self.count_conf['STATE/UT']
+                                                == state].iloc[:, 1:].T
+                    recovered = self.count_recover[self.count_recover['STATE/UT']
+                                                   == state].iloc[:, 1:].T
+                    death = self.count_death[self.count_death['STATE/UT']
+                                             == state].iloc[:, 1:].T
+                    district_dict = {'Confirmed': confirmed[confirmed.columns[0]],
+                                     'Recovered': recovered[recovered.columns[0]], 'Death': death[death.columns[0]]}
                     return pd.DataFrame(district_dict)
             except:
                 raise Exception('No such states/state code')
@@ -505,7 +580,7 @@ class Data(initializer):
         else:
             raise Exception('Startdate must be less than EndDate')
 
-    def get_count_by_date(self,by,date=None):
+    def get_count_by_date(self, by, date=None):
         '''
         Gives the daily count of a given date or all dates by 'confirmed' or 'recovered'
         or 'death'
@@ -533,18 +608,20 @@ class Data(initializer):
             if '{d.year}'.format(d=datetime.strptime(date, '%d/%m/%Y')) == '2020':
                 date = '{d.month}/{d.day}/{d.year}'.format(
                     d=datetime.strptime(date, '%d/%m/%Y'))
-    
+
                 try:
                     if by.lower() == 'death':
                         df = self.count_death[date]
-                        df = pd.concat([self.count_death['STATE/UT'], df], axis=1)
+                        df = pd.concat(
+                            [self.count_death['STATE/UT'], df], axis=1)
                     elif by.lower() == 'recovered':
                         df = self.count_recover[date]
                         df = pd.concat(
                             [self.count_recover['STATE/UT'], df], axis=1)
                     elif by.lower() == 'confirmed':
                         df = self.count_conf[date]
-                        df = pd.concat([self.count_conf['STATE/UT'], df], axis=1)
+                        df = pd.concat(
+                            [self.count_conf['STATE/UT'], df], axis=1)
                     return df
                 except:
                     raise Exception(
@@ -554,14 +631,15 @@ class Data(initializer):
         else:
             try:
                 if by.lower() == 'death':
-                    df=self.count_death
-                elif by.lower() =='recovered':
-                    df=self.count_recover
+                    df = self.count_death
+                elif by.lower() == 'recovered':
+                    df = self.count_recover
                 elif by.lower() == 'confirmed':
-                    df=self.count_conf
+                    df = self.count_conf
                 return df
             except:
-                raise Exception('by Argument must be "death" or "recovered" or "confirmed"')
+                raise Exception(
+                    'by Argument must be "death" or "recovered" or "confirmed"')
 
     def rank(self, num, by, kind='top', cumulative=False, date=None):
         '''
@@ -615,7 +693,7 @@ class Data(initializer):
                     raise Exception('Check date or by parameter')
             else:
                 try:
-                    df = self.get_count_by_date(by.split(' ')[1],date)
+                    df = self.get_count_by_date(by.split(' ')[1], date)
                     df = df.iloc[:-1,
                                  :].sort_values(by=df.columns[1], ascending=False)
                     if kind == 'top':
@@ -639,17 +717,19 @@ class Data(initializer):
                 except:
                     raise Exception('Check date or by parameter')
             else:
-                d={}
+                d = {}
                 try:
-                   count_data=self.get_count_by_date(by=by.split(' ')[1])
-                   count_data=count_data.set_index('STATE/UT').T
-                   for col in count_data.columns:
-                       if kind =='top':
-                           d[col]=count_data[col].sort_values(ascending=False)[:num]
-                       else:
-                           d[col]=count_data[col].sort_values(ascending=False)[-num:]
-                   del d['Total']
-                   return d
+                    count_data = self.get_count_by_date(by=by.split(' ')[1])
+                    count_data = count_data.set_index('STATE/UT').T
+                    for col in count_data.columns:
+                        if kind == 'top':
+                            d[col] = count_data[col].sort_values(
+                                ascending=False)[:num]
+                        else:
+                            d[col] = count_data[col].sort_values(
+                                ascending=False)[-num:]
+                    del d['Total']
+                    return d
                 except:
                     raise Exception('Select right by parameter')
 
@@ -695,7 +775,7 @@ class visualizer(initializer):
         self.count_Death = pd.Series(
             self.count_death[self.count_death['STATE/UT'] == 'Total'].iloc[:, count_dict['1/30/2020']:].values[0])
 
-    def __graph(self, x, confirmed, recovered, death,title=None, date=True):
+    def __graph(self, x, confirmed, recovered, death, title=None, date=True):
         '''
         A private method used by visualizer class methods to generate 3 subplots graphs
 
@@ -720,9 +800,9 @@ class visualizer(initializer):
         fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=False)
         fig.set_size_inches(23.5, 15.5)
         c_max = max(confirmed)
-        r_max=max(recovered)
-        d_max=max(death)
-        df_max=max([c_max,r_max,d_max])
+        r_max = max(recovered)
+        d_max = max(death)
+        df_max = max([c_max, r_max, d_max])
         # print(date)
         if date != True:
             x_min = min(x)
@@ -765,13 +845,13 @@ class visualizer(initializer):
             ax[2][0].plot(dateseries_dead)
             ax[2][0].set_title('Dead cases')'''
             fig.autofmt_xdate()
-            ax3.tick_params(axis ='x', rotation = 45)
+            ax3.tick_params(axis='x', rotation=45)
             if title != None:
                 fig.suptitle(title, fontsize=25)
 
         plt.show()
 
-    def whole(self, title=None,daily=False):
+    def whole(self, title=None, daily=False):
         '''
         Generate 3 subplots of whole collected data 
 
@@ -790,11 +870,12 @@ class visualizer(initializer):
         '''
         if daily == True:
             self.__graph(self.date, self.count_confirmed,
-                         self.count_recovered, self.count_Death,title=title)
+                         self.count_recovered, self.count_Death, title=title)
         else:
-            self.__graph(self.date, self.confirmed, self.recovered, self.death,title=title)
+            self.__graph(self.date, self.confirmed,
+                         self.recovered, self.death, title=title)
 
-    def tail(self, num, title=None,daily=False):
+    def tail(self, num, title=None, daily=False):
         '''
         Gives graphical visualization of latest n(=num) dayes based on daily or cumulative data
 
@@ -817,8 +898,8 @@ class visualizer(initializer):
             confirmed = self.count_confirmed[len(self.count_confirmed)-num:]
             recovered = self.count_recovered[len(self.count_recovered)-num:]
             death = self.count_Death[len(self.count_Death)-num:]
-            if title !=None:
-                self.__graph(date, confirmed, recovered, death,title=title)
+            if title != None:
+                self.__graph(date, confirmed, recovered, death, title=title)
             else:
                 self.__graph(date, confirmed, recovered, death)
         else:
@@ -827,11 +908,11 @@ class visualizer(initializer):
             recovered = self.recovered[len(self.recovered)-num:]
             death = self.death[len(self.death)-num:]
             if title != None:
-                self.__graph(date, confirmed, recovered, death,title=title)
+                self.__graph(date, confirmed, recovered, death, title=title)
             else:
                 self.__graph(date, confirmed, recovered, death)
 
-    def head(self, num, title=None,daily=False):
+    def head(self, num, title=None, daily=False):
         '''
         Gives graphical visualization of first n(=num) dayes based on daily or cumulative data
 
@@ -856,7 +937,7 @@ class visualizer(initializer):
             recovered = self.count_recovered[:num]
             death = self.count_Death[:num]
             if title != None:
-                self.__graph(date, confirmed, recovered, death,title=title)
+                self.__graph(date, confirmed, recovered, death, title=title)
             else:
                 self.__graph(date, confirmed, recovered, death)
         else:
@@ -865,11 +946,11 @@ class visualizer(initializer):
             recovered = self.recovered[:num]
             death = self.death[:num]
             if title != None:
-                self.__graph(date, confirmed, recovered, death,title=title)
+                self.__graph(date, confirmed, recovered, death, title=title)
             else:
-                self.__graph(date, confirmed, recovered, death,title=title)
+                self.__graph(date, confirmed, recovered, death, title=title)
 
-    def graph_by_date(self, startDate, endDate, state=None,title=None, daily=False):
+    def graph_by_date(self, startDate, endDate, state=None, title=None, daily=False):
         '''
         Gives the visualization of cumulative data or daily data between two given
         dates for a given state or as whole india.
@@ -914,33 +995,43 @@ class visualizer(initializer):
                         state = self.code[state]
                     except:
                         if 'and' in state.split(' '):
-                            words=[]
+                            words = []
                             for i in state.split(" "):
                                 if i != 'and':
                                     words.append(i.title())
                                 else:
                                     words.append(i)
-                            state=' '.join(words)
-                        else:    
+                            state = ' '.join(words)
+                        else:
                             state = state.title()
                     if daily == False:
 
-                        date = self.date[self.date[self.date == start].index[0]:self.date[self.date == end].index[0]+1]
-                        confirmed = pd.Series(self.csv_Confirmed[self.csv_Confirmed['STATE/UT'] == state].iloc[:, column_dict[start]:column_dict[end]+1].values[0])
-                        recovered = pd.Series(self.csv_recovered[self.csv_Confirmed['STATE/UT'] == state].iloc[:, column_dict[start]:column_dict[end]+1].values[0])
-                        death = pd.Series(self.csv_Death[self.csv_Death['STATE/UT'] == state].iloc[:, column_dict[start]:column_dict[end]+1].values[0])
-                        if title !=None:
-                            self.__graph(date, confirmed, recovered, death,title=title)
+                        date = self.date[self.date[self.date == start].index[0]
+                            :self.date[self.date == end].index[0]+1]
+                        confirmed = pd.Series(
+                            self.csv_Confirmed[self.csv_Confirmed['STATE/UT'] == state].iloc[:, column_dict[start]:column_dict[end]+1].values[0])
+                        recovered = pd.Series(
+                            self.csv_recovered[self.csv_Confirmed['STATE/UT'] == state].iloc[:, column_dict[start]:column_dict[end]+1].values[0])
+                        death = pd.Series(
+                            self.csv_Death[self.csv_Death['STATE/UT'] == state].iloc[:, column_dict[start]:column_dict[end]+1].values[0])
+                        if title != None:
+                            self.__graph(date, confirmed,
+                                         recovered, death, title=title)
                         else:
                             self.__graph(date, confirmed, recovered, death)
                     else:
 
-                        date = self.date[self.date[self.date == start].index[0]:self.date[self.date == end].index[0]+1]
-                        confirmed = pd.Series(self.count_conf[self.count_conf['STATE/UT'] == state].iloc[:, count_dict[start]:count_dict[end]+1].values[0])
-                        recovered = pd.Series(self.count_recover[self.count_recover['STATE/UT'] == state].iloc[:, count_dict[start]:count_dict[end]+1].values[0])
-                        death = pd.Series(self.count_death[self.count_death['STATE/UT'] == state].iloc[:, count_dict[start]:count_dict[end]+1].values[0])
+                        date = self.date[self.date[self.date == start].index[0]
+                            :self.date[self.date == end].index[0]+1]
+                        confirmed = pd.Series(
+                            self.count_conf[self.count_conf['STATE/UT'] == state].iloc[:, count_dict[start]:count_dict[end]+1].values[0])
+                        recovered = pd.Series(
+                            self.count_recover[self.count_recover['STATE/UT'] == state].iloc[:, count_dict[start]:count_dict[end]+1].values[0])
+                        death = pd.Series(
+                            self.count_death[self.count_death['STATE/UT'] == state].iloc[:, count_dict[start]:count_dict[end]+1].values[0])
                         if title != None:
-                            self.__graph(date, confirmed, recovered, death,title=title)
+                            self.__graph(date, confirmed,
+                                         recovered, death, title=title)
                         else:
                             self.__graph(date, confirmed, recovered, death)
                 except:
@@ -948,16 +1039,16 @@ class visualizer(initializer):
             else:
                 if daily == False:
 
-                    date = self.date[self.date[self.date == start].index[0]                                     :self.date[self.date == end].index[0]+1]
+                    date = self.date[self.date[self.date == start].index[0]:self.date[self.date == end].index[0]+1]
                     confirmed = self.confirmed[self.date[self.date ==
                                                          start].index[0]:self.date[self.date == end].index[0]+1]
                     recovered = self.recovered[self.date[self.date ==
                                                          start].index[0]:self.date[self.date == end].index[0]+1]
-                    death = self.death[self.date[self.date == start].index[0]                                       :self.date[self.date == end].index[0]+1]
+                    death = self.death[self.date[self.date == start].index[0]:self.date[self.date == end].index[0]+1]
                     self.__graph(date, confirmed, recovered, death)
                 else:
 
-                    date = self.date[self.date[self.date == start].index[0]                                     :self.date[self.date == end].index[0]+1]
+                    date = self.date[self.date[self.date == start].index[0]:self.date[self.date == end].index[0]+1]
                     confirmed = self.count_confirmed[self.date[self.date ==
                                                                start].index[0]:self.date[self.date == end].index[0]+1]
                     recovered = self.count_recovered[self.date[self.date ==
@@ -965,13 +1056,14 @@ class visualizer(initializer):
                     death = self.count_Death[self.date[self.date ==
                                                        start].index[0]:self.date[self.date == end].index[0]+1]
                     if title != None:
-                        self.__graph(date, confirmed, recovered, death,title=title)
+                        self.__graph(date, confirmed, recovered,
+                                     death, title=title)
                     else:
                         self.__graph(date, confirmed, recovered, death)
         else:
             raise Exception('Startdate should be less than Enddate')
 
-    def plot_by_latitude(self,title=None):
+    def plot_by_latitude(self, title=None):
         '''
         Gives the visualization of counts with respect to state latitudes
 
@@ -985,7 +1077,7 @@ class visualizer(initializer):
         3 subplots consisting latitude vs latitude confirmed,latitudes vs total recovered,latitudes vs total deceased.
 
         '''
-        
+
         newConf = self.csv_Confirmed.sort_values(by=['LATITUDE'])
         newRec = self.csv_recovered.sort_values(by=['LATITUDE'])
         newDeath = self.csv_Death.sort_values(by=['LATITUDE'])
@@ -994,6 +1086,7 @@ class visualizer(initializer):
         recovered = newRec[newRec.columns[-1]][:-1]
         death = newDeath[newDeath.columns[-1]][:-1]
         if title != None:
-            self.__graph(latitude, confirmed, recovered, death, date=False,title=title)
+            self.__graph(latitude, confirmed, recovered,
+                         death, date=False, title=title)
         else:
             self.__graph(latitude, confirmed, recovered, death, date=False)

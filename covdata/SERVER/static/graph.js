@@ -1,8 +1,9 @@
 $(document).ready(function () {
   $("li:eq(4)").addClass("active");
 });
-
 function GetGraphData() {
+  // $("canvas#graph").remove();
+  if (window.myChart) window.myChart.destroy();
   var e = document.getElementById("graph-state");
   var state_name = e.options[e.selectedIndex].text;
   var p = document.getElementById("daily");
@@ -22,15 +23,15 @@ function GetGraphData() {
       condition_data: JSON.stringify(condition),
     },
     function (data, status, xhr) {
-      // var df = JSON.parse(data);
-      // console.log(data[1]);
-      // console.log(Object.keys(df[1]).slice(1));
-      // console.log(Object.values(df[df.length - 1]).slice(1));
+      // $("div#chart").append(
+      //   '<canvas id="graph" width="600" height="200"></canvas>'
+      // );
       var ctx = document.getElementById("graph").getContext("2d");
       if (condition != "Together") {
-        var myChart = new Chart(ctx, {
-          type: "line",
+        // console.log(myChart);
 
+        window.myChart = new Chart(ctx, {
+          type: "line",
           data: {
             labels: Object.keys(data[0]).slice(1),
             datasets: [
@@ -38,7 +39,7 @@ function GetGraphData() {
                 label: state_name + " " + q + " Count cases " + condition,
                 data: Object.values(data[data.length - 1]).slice(1),
                 backgroundColor: [
-                  "rgba(255, 99, 132, 0.2)",
+                  "rgba(255, 50, 50, 1)",
                   // "rgba(54, 162, 235, 0.2)",
                   // "rgba(255, 206, 86, 0.2)",
                   // "rgba(75, 192, 192, 0.2)",
@@ -46,7 +47,7 @@ function GetGraphData() {
                   // "rgba(255, 159, 64, 0.2)",
                 ],
                 borderColor: [
-                  "rgba(255, 99, 132, 1)",
+                  "rgba(255, 0, 0, 1)",
                   // "rgba(54, 162, 235, 1)",
                   // "rgba(255, 206, 86, 1)",
                   // "rgba(75, 192, 192, 1)",
@@ -59,6 +60,9 @@ function GetGraphData() {
             ],
           },
           options: {
+            animation: {
+              duration: 2000,
+            },
             scales: {
               yAxes: [
                 {
@@ -71,82 +75,38 @@ function GetGraphData() {
           },
         });
       } else {
-        var df_1 = JSON.parse(data[0]);
-        var df_2 = JSON.parse(data[1]);
-        var df_3 = JSON.parse(data[2]);
-        var myChart = new Chart(ctx, {
+        // var df_1 = JSON.parse(data[0]);
+        // var df_2 = JSON.parse(data[1]);
+        // var df_3 = JSON.parse(data[2]);
+        var cond = ["confirmed", "recovered", "deceased"];
+        var color = [
+          "rgba(255, 0, 0, 1)",
+          "rgba(0, 255, 0, 1)",
+          "rgba(0, 0, 255, 1)",
+        ];
+        var dataset = [];
+        for (i = 0; i < data.length; i++) {
+          var label = state_name + " " + q + " Count cases for " + cond[i];
+          var d = Object.values(
+            JSON.parse(data[i])[JSON.parse(data[i]).length - 1]
+          ).slice(1);
+          var back_color = ["rgba(255, 99, 132, 0.2)"];
+          var border = color[i];
+          dataset.push({
+            label: label,
+            data: d,
+            backgroundColor: back_color,
+            borderColor: border,
+            fill: false,
+            borderWidth: 1,
+          });
+        }
+        window.myChart = new Chart(ctx, {
           type: "line",
-
+          animationEasing: "linear",
           data: {
-            labels: Object.keys(df_1[0]).slice(1),
-            datasets: [
-              {
-                label: state_name + " " + q + " Count cases for Confirmed",
-                data: Object.values(df_1[df_1.length - 1]).slice(1),
-                backgroundColor: [
-                  "rgba(255, 99, 132, 0.2)",
-                  // "rgba(54, 162, 235, 0.2)",
-                  // "rgba(255, 206, 86, 0.2)",
-                  // "rgba(75, 192, 192, 0.2)",
-                  // "rgba(153, 102, 255, 0.2)",
-                  // "rgba(255, 159, 64, 0.2)",
-                ],
-                borderColor: [
-                  "rgba(255, 99, 132, 1)",
-                  // "rgba(54, 162, 235, 1)",
-                  // "rgba(255, 206, 86, 1)",
-                  // "rgba(75, 192, 192, 1)",
-                  // "rgba(153, 102, 255, 1)",
-                  // "rgba(255, 159, 64, 1)",
-                ],
-                fill: false,
-                borderWidth: 1,
-              },
-              {
-                label: state_name + " " + q + " Count cases for Recovered",
-                data: Object.values(df_2[df_2.length - 1]).slice(1),
-                backgroundColor: [
-                  // "rgba(255, 99, 132, 0.2)",
-                  "rgba(54, 162, 235, 0.2)",
-                  // "rgba(255, 206, 86, 0.2)",
-                  // "rgba(75, 192, 192, 0.2)",
-                  // "rgba(153, 102, 255, 0.2)",
-                  // "rgba(255, 159, 64, 0.2)",
-                ],
-                borderColor: [
-                  // "rgba(255, 99, 132, 1)",
-                  "rgba(54, 162, 235, 1)",
-                  // "rgba(255, 206, 86, 1)",
-                  // "rgba(75, 192, 192, 1)",
-                  // "rgba(153, 102, 255, 1)",
-                  // "rgba(255, 159, 64, 1)",
-                ],
-                fill: false,
-                borderWidth: 1,
-              },
-              {
-                label: state_name + " " + q + " Count cases for Deceased",
-                data: Object.values(df_3[df_3.length - 1]).slice(1),
-                backgroundColor: [
-                  // "rgba(255, 99, 132, 0.2)",
-                  // "rgba(54, 162, 235, 0.2)",
-                  // "rgba(255, 206, 86, 0.2)",
-                  // "rgba(75, 192, 192, 0.2)",
-                  // "rgba(153, 102, 255, 0.2)",
-                  "rgba(255, 159, 64, 0.2)",
-                ],
-                borderColor: [
-                  // "rgba(255, 99, 132, 1)",
-                  // "rgba(54, 162, 235, 1)",
-                  // "rgba(255, 206, 86, 1)",
-                  // "rgba(75, 192, 192, 1)",
-                  // "rgba(153, 102, 255, 1)",
-                  "rgba(255, 159, 64, 1)",
-                ],
-                fill: false,
-                borderWidth: 1,
-              },
-            ],
+            labels: Object.keys(JSON.parse(data[0])[0]).slice(1),
+            datasets: dataset,
           },
           options: {
             scales: {
@@ -157,6 +117,9 @@ function GetGraphData() {
                   },
                 },
               ],
+            },
+            tooltips: {
+              mode: "x",
             },
           },
         });
