@@ -1,5 +1,6 @@
 ﻿![CoronaImage](image/corona.jpg)
 
+[![Downloads](https://pepy.tech/badge/covdata)](https://pepy.tech/project/covdata)
 [![PyPI](https://img.shields.io/pypi/v/covdata?label=PyPI)](https://pypi.org/project/covdata/)
 [![dataset](https://img.shields.io/badge/Covid--19-Dataset-yellowgreen)](https://github.com/kalyaniuniversity/COVID-19-Datasets)
 [![Analysis](https://img.shields.io/badge/Covid--19-Analysis-brightgreen)](https://debacharya.com/covid)
