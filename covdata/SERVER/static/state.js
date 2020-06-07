@@ -1,50 +1,52 @@
 $(document).ready(function () {
-  $("li:eq(1)").addClass("active");
+  var menu = document.querySelector(".hamburger-menu");
+  var bar = document.querySelector(".nav-bar");
+  menu.addEventListener("click", () => {
+    bar.classList.toggle("change");
+  });
+  $("select").niceSelect();
+  GetDataState();
   $("#daily").change(function () {
-    var el = $(this);
-    // console.log(el.val());
-    if (el.val() === "Yes" && $("#state_name").val() === "All") {
-      $("#Daily_bar").append(
-        "<select id='daily_1'><option>--Select condition--</option><option>Confirmed</option><option>Recovered</option><option>Death</option></select>"
-      );
-    } else if ($("#state_name").val() != "All" && el.val() === "Yes") {
-      var children = document.getElementById("Daily_bar").children;
-      id = children[children.length - 1].getAttribute("id");
-      if (id === "daily_1") {
-        $("#Daily_bar select:last-child").remove();
-      }
-    } else if ($("#state_name").val() === "All" && el.val() === "No") {
-      var children = document.getElementById("Daily_bar").children;
-      id = children[children.length - 1].getAttribute("id");
-      if (id === "daily_1") {
-        $("#Daily_bar select:last-child").remove();
-      }
-    }
+    GetDataState();
   });
   $("#state_name").change(function () {
-    var et = $(this);
-    // console.log(et.val());
-    if (et.val() === "All" && $("#daily").val() === "Yes") {
-      $("#Daily_bar").append(
-        "<select id='daily_1'><option>--Select condition--</option><option>Confirmed</option><option>Recovered</option><option>Death</option></select>"
-      );
-    } else if (et.val() != "All" && $("#daily").val() === "Yes") {
-      var children = document.getElementById("Daily_bar").children;
-      id = children[children.length - 1].getAttribute("id");
-      if (id === "daily_1") {
-        $("#Daily_bar select:last-child").remove();
+    GetDataState();
+  });
+  $("svg").click(function () {
+    // console.log($(this));
+    var info = document.querySelector(".status");
+    info.classList.remove("animate1");
+    info.classList.remove("animate2");
+    var reload = document.querySelector("svg");
+    reload.classList.add("reload");
+    $.get("/refresh/state", function (data, textStatus, jqXHR) {
+      if (data == "Updated") {
+        $(".status").text("Already Updated");
+        info.classList.add("animate1");
+      } else {
+        location.reload();
       }
-    }
+
+      // $(".status").text(null);
+      reload.classList.remove("reload");
+      // info.classList.remove("animate");
+    });
+  });
+  $(".download").click(function () {
+    var e = document.getElementById("state_name");
+    var p = document.getElementById("daily");
+    var result = e.options[e.selectedIndex].text;
+    var daily = p.options[p.selectedIndex].text;
+    const a = document.createElement("a");
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.href = "/get-csv/" + result + "-" + daily;
+    // a.setAttribute("download", "Confirmed.csv");
+    a.click();
+    window.URL.revokeObjectURL(a.href);
+    document.body.removeChild(a);
   });
 });
-// console.log(et);
-// console.log(el);
-
-//  else {
-//   $("#Daily_bar select:last-child").remove();
-// }
-// var chil = document.getElementById("Daily_bar").children[1];
-// console.log(chil.getAttribute("id"));
 
 function GetDataState() {
   var e = document.getElementById("state_name");
@@ -53,16 +55,11 @@ function GetDataState() {
   var p = document.getElementById("daily");
   var daily = p.options[p.selectedIndex].text;
 
-  var q = document.getElementById("daily_1");
-  if (q != null) {
-    var condition = q.options[q.selectedIndex].text;
-  }
   $.post(
     "/State",
     {
       state_data: JSON.stringify(state_name),
       daily_data: JSON.stringify(daily),
-      condition_data: JSON.stringify(condition),
     },
     function (data, status, xhr) {
       var df = JSON.parse(data);
@@ -103,6 +100,8 @@ function GetDataState() {
       divShowData.innerHTML = "";
       divShowData.appendChild(table);
       divShowData.style.width = "auto";
+      divShowData.style.maxWidth = "80vw";
+      divShowData.style.maxHeight = "500px";
       // divShowData.style.background = "grey";
       divShowData.style.overflow = "auto";
       divShowData.style.marginTop = "20px";

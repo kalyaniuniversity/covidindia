@@ -30,12 +30,12 @@ from covdata.covidindia import *
 instance_1 = initializer()
 
 # Shows the data that are collected
-# shows the confirmed dataset that gathered from source
-data = instance_1.show_data(of='confirmed')
-# shows the recovered dataset that gathered from source
+# shows daily count confirmed dataset that gathered from source
+data = instance_1.show_data(of='confirmed', daily=True)
+# shows the recovered dataset that gathered from source.If daily is not mentioned then cumulative dataset will be shown.
 data = instance_1.show_data(of='recovered')
-# shows the death dataset that gathered from source
-data = instance_1.show_data(of='death')
+# shows the daily count death dataset that gathered from source
+data = instance_1.show_data(of='death', daily=True)
 
 # create an object of Data class
 # always pass the 1st instance object to all other instances
@@ -127,5 +127,3 @@ instance_3.graph_by_date('30/01/2020', '7/04/2020',
 # if state is not mentioned by default it will graph all states together
 instance_3.graph_by_date('1/02/2020', '29/03/2020', daily=True,
                          title='daily count plot between 1/2/2020 and 29/03/2020 for all states together')
-# plot the total counts for each states vs latitude
-instance_3.plot_by_latitude(title='Population vs Latitude plot')

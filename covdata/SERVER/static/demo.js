@@ -1,5 +1,103 @@
 $(document).ready(function () {
-  $("li:eq(2)").addClass("active");
+  // $("li:eq(2)").addClass("active");
+  var menu = document.querySelector(".hamburger-menu");
+  var bar = document.querySelector(".nav-bar");
+  menu.addEventListener("click", () => {
+    bar.classList.toggle("change");
+  });
+  $("select").niceSelect();
+  $("svg").click(function () {
+    // console.log($(this));
+    var info = document.querySelector(".status");
+    info.classList.remove("animate1");
+    info.classList.remove("animate2");
+    var reload = document.querySelector("svg");
+    reload.classList.add("reload");
+    $.get("/refresh/demography", function (data, textStatus, jqXHR) {
+      if (data == "Updated") {
+        $(".status").text("Already Updated");
+        info.classList.add("animate1");
+      } else {
+        $(".status").text("Update Done");
+        info.classList.add("animate2");
+      }
+
+      // $(".status").text(null);
+      reload.classList.remove("reload");
+      // info.classList.remove("animate");
+    });
+  });
+  $(".download").click(function () {
+    var date_data = document.getElementById("my_date_picker").value;
+    var e = document.getElementById("state-name");
+    var state = e.options[e.selectedIndex].text;
+    const a = document.createElement("a");
+    a.style.display = "none";
+    document.body.appendChild(a);
+    if (state != "All") {
+      var p = document.getElementById("district-select");
+      var district = p.options[p.selectedIndex].text;
+      if (date_data == "") {
+        a.href = "/get-csv/" + state + "-" + "All";
+      } else {
+        a.href =
+          "/get-csv/" +
+          state +
+          "-" +
+          "(" +
+          date_data.split("/").join("-") +
+          ")";
+      }
+      if (district != "All") {
+        var q = document.getElementById("city-select");
+        var city = q.options[q.selectedIndex].text;
+        if (date_data == "") {
+          a.href = "/get-csv/" + district + "-" + "All";
+        } else {
+          a.href =
+            "/get-csv/" +
+            district +
+            "-" +
+            "(" +
+            date_data.split("/").join("-") +
+            ")";
+        }
+
+        if (city != "All") {
+          if (date_data == "") {
+            a.href = "/get-csv/" + city + "-" + "All";
+          } else {
+            a.href =
+              "/get-csv/" +
+              city +
+              "-" +
+              "(" +
+              date_data.split("/").join("-") +
+              ")";
+          }
+        }
+      }
+    } else {
+      if (date_data == "") {
+        a.href = "/get-csv/" + state + "-" + "All";
+      } else {
+        a.href =
+          "/get-csv/" +
+          state +
+          "-" +
+          "(" +
+          date_data.split("/").join("-") +
+          ")";
+      }
+    }
+
+    // a.href = "/get-csv/" + result + "-" + daily;
+    // a.setAttribute("download", "Confirmed.csv");
+    a.click();
+    window.URL.revokeObjectURL(a.href);
+    document.body.removeChild(a);
+  });
+  GetDemoState();
   $("#state-name").change(function () {
     var el = $(this);
     // console.log(el.val());
@@ -13,7 +111,7 @@ $(document).ready(function () {
           console.log(data);
           var children = document.getElementById("dis-span").children;
           console.log(children);
-          if (children[children.length - 1] == undefined) {
+          if (children[0] == undefined) {
             $("#dis-span").append(
               "<select id='district-select'><option>--Select District--</option><option>All</option></select>"
             );
@@ -25,12 +123,14 @@ $(document).ready(function () {
             ) {
               $(this).remove();
             }
+            $("#dis-span div:nth-child(2)").remove();
           });
           for (var i = 0; i < data.length; i++) {
             if (data[i] != "Unknown") {
               $("#district-select").append("<option>" + data[i] + "</option>");
             }
           }
+          $("select").niceSelect();
           console.log(document.getElementById("district-select"));
           $("#district-select").change(function () {
             var el = $(this);
@@ -46,7 +146,7 @@ $(document).ready(function () {
                   var children = document.getElementById("dis-span").children;
                   console.log(children);
                   if (
-                    children[children.length - 1].getAttribute("id") !=
+                    children[children.length - 2].getAttribute("id") !=
                     "city-select"
                   ) {
                     $("#dis-span").append(
@@ -60,7 +160,9 @@ $(document).ready(function () {
                     ) {
                       $(this).remove();
                     }
+                    $("#dis-span div:nth-child(4)").remove();
                   });
+
                   for (var i = 0; i < data.length; i++) {
                     if (data[i] != "Unknown") {
                       $("#city-select").append(
@@ -68,27 +170,47 @@ $(document).ready(function () {
                       );
                     }
                   }
+                  $("select").niceSelect();
+                  $("#city-select").change(function () {
+                    GetDemoState();
+                  });
+                  $("#district-select").change(function () {
+                    var q = document.getElementById("city-select");
+                    if (q != null) {
+                      var city = q.options[q.selectedIndex].text;
+                      if (city != "--Select city--") {
+                        GetDemoState();
+                      }
+                    }
+                  });
                 }
               );
             }
+
             if (el.val() === "All") {
               var children = document.getElementById("dis-span").children;
               if (
-                children[children.length - 1].getAttribute("id") !=
+                children[children.length - 2].getAttribute("id") !=
                 "district-select"
               ) {
-                $("#dis-span select:last-child").remove();
+                $("#dis-span div:last-child").remove();
+                $("#city-select").remove();
               }
+              GetDemoState();
             }
           });
         }
       );
     }
     if (el.val() === "All") {
-      $("#dis-span select:last-child").remove();
-      $("#dis-span select:last-child").remove();
+      $("#city-select").remove();
+      $("#district-select").remove();
+      $("#dis-span div:last-child").remove();
+      $("#dis-span div:last-child").remove();
+      GetDemoState();
     }
   });
+
   $(document).ready(function () {
     $(function () {
       $("#my_date_picker").datepicker({
@@ -101,6 +223,9 @@ $(document).ready(function () {
         },
       });
     });
+  });
+  $("#my_date_picker").change(function () {
+    GetDemoState();
   });
 });
 function GetDemoState() {
@@ -195,6 +320,9 @@ function GetDemoState() {
         divShowData.innerHTML = "";
         divShowData.appendChild(table);
         divShowData.style.width = "auto";
+        divShowData.style.maxWidth = "80vw";
+        divShowData.style.height = "auto";
+        divShowData.style.maxHeight = "90vh";
         // divShowData.style.background = "grey";
         divShowData.style.overflow = "auto";
         divShowData.style.marginTop = "20px";

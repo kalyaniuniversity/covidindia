@@ -69,30 +69,37 @@ def main():
             of = args.of
             if '_' in of:
                 of = of.split('_')[1]
+                if args.daily != None:
+                    _daily = True
+                else:
+                    _daily = False
                 if args.head != None:
                     if args.save != None:
-                        init.show_data(of).head(args.head).to_csv(
+                        init.show_data(of, _daily).head(args.head).to_csv(
                             args.save, index=True)
                     else:
-                        print(init.show_data(of).head(args.head))
+                        print(init.show_data(of, _daily).head(args.head))
                 elif args.tail != None:
                     if args.save != None:
-                        init.show_data(of).tail(args.tail).to_csv(
+                        init.show_data(of, _daily).tail(args.tail).to_csv(
                             args.save, index=True)
                     else:
-                        print(init.show_data(of).tail(args.tail))
+                        print(init.show_data(of, _daily).tail(args.tail))
                 elif args.head == None:
                     if args.save != None:
-                        init.show_data(of).to_csv(args.save, index=True)
+                        init.show_data(of, _daily).to_csv(
+                            args.save, index=True)
                     else:
-                        print(init.show_data(of))
+                        print(init.show_data(of, _daily))
                 elif args.tail == None:
                     if args.save != None:
-                        init.show_data(of).to_csv(args.save, index=True)
+                        init.show_data(of, _daily).to_csv(
+                            args.save, index=True)
                     else:
-                        print(init.show_data(of))
+                        print(init.show_data(of, _daily))
             else:
                 print('Invalid Choice')
+
         elif args.options == 'demography':
             demo = Demographic_overview(init, silent=True)
             try:
@@ -338,10 +345,6 @@ def main():
                                                    daily=False)
                     else:
                         raise Exception('Two Dates must be separated by "-"')
-
-            elif args.graph == 'latitude':
-                obj3.plot_by_latitude(
-                    title='Graph between total confirmed vs latitude')
 
         elif args.options == 'cumulative_between_date':
             obj2 = Data(init)

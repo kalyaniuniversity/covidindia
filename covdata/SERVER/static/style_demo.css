@@ -1,56 +1,107 @@
 body {
-  background: rgb(197, 197, 197);
-  margin-bottom: 25px;
+  background: #527379;
+  /* background: linear-gradient(to right bottom, #648880, #293f50); */
+  height: 100%;
+}
+.hamburger-menu {
+  height: 15px;
+  width: 30px;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  cursor: pointer;
+}
+.line {
+  width: 100%;
+  height: 2px;
+  background-color: chocolate;
+  transition: all 0.8s;
+  box-shadow: 2px 2px 4px rgb(53, 53, 53);
+}
+.nav-bar {
+  width: 250px;
+  height: 100vh;
+  background-color: rgb(49, 77, 90);
+  position: fixed;
+  top: 0;
+  left: -300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  border-radius: 0 20% 10% 0;
+  transition: 0.8s;
+  z-index: 3;
+}
+.nav-item {
+  list-style: none;
+  margin: 25px;
+}
+.nav-list {
+  text-align: left;
+}
+
+.nav-item a {
+  text-decoration: none;
+  color: white;
+  font-size: 20px;
+  font-weight: 5px;
+  letter-spacing: 2px;
+}
+.nav-item a:hover {
+  color: palevioletred;
+}
+
+.change .line-1 {
+  transform: rotateZ(-45deg) translate(-7.5px, 6px);
+}
+.change .line-2 {
+  opacity: 0;
+}
+
+.change .line-3 {
+  transform: rotateZ(45deg);
+}
+
+.change {
+  left: 0;
 }
 table {
-  background-color: rgb(192, 197, 193);
+  /* background-color: rgb(192, 197, 193); */
+  color: white;
 }
 #data_show th,
 td p {
   font: 18px "Segoe UI";
 }
-table,
-th,
+#data_show th,
 td {
-  border: solid 1px #ddd;
-  border-collapse: collapse;
+  border: solid 1px rgb(170, 170, 170);
+  /* border-collapse: collapse; */
   padding: 2px 15px;
   text-align: center;
 }
-th {
+#data_show th {
   font-weight: bold;
+  border-radius: 3px;
+  position: sticky;
+  top: 0;
+  background: rgb(71, 108, 130);
+  z-index: 1;
 }
-ul {
-  margin: auto;
-  overflow: auto;
-  justify-content: space-around;
-  display: flex;
+#data_show td {
+  border: none;
+  border-radius: 3px;
+  background: rgb(113, 131, 142);
 }
-
-nav {
-  text-align: center;
-  background-color: seagreen;
-  border-radius: 5px;
-  margin-bottom: 50px;
-}
-
-ul li {
-  float: left;
-  padding: 13px 20px;
-  text-decoration: none;
-  list-style: none;
-  /* background-color: saddlebrown; */
-}
-/* 
-li:hover {
-  border-bottom: 3px solid blue;
-} */
-a:hover {
-  color: white;
-}
-
-ul li a {
-  text-decoration: none;
+#data_show tr td:nth-child(1) {
+  border: solid 1px rgb(170, 170, 170);
+  position: sticky;
+  background: rgb(71, 108, 130);
+  left: 0;
 }
 h2 {
   clear: both;
@@ -67,11 +118,18 @@ select {
   border-radius: 5px;
 }
 input {
-  border-radius: 5px;
+  border-radius: 2px;
   padding: 0.0000003px;
-  height: 16px;
-  border: 29px black;
+  height: 22px;
+  border: none;
+  border-bottom: 1px solid antiquewhite;
   text-align: center;
+  background: transparent;
+  color: white;
+}
+::placeholder {
+  color: white;
+  opacity: 1;
 }
 #dis-span select {
   margin-right: 4px;
@@ -89,12 +147,137 @@ div.ui-datepicker {
 p {
   color: hotpink;
 }
+.status {
+  color: white;
+  font-size: 20px;
+  /* right: 350px;
+  top: 30px; */
+  opacity: 0;
+  font-weight: lighter;
+  font-style: italic;
+}
+.status.animate1 {
+  height: auto;
+  width: auto;
+  background: transparent;
+  animation: opa 8s;
+}
+.status.animate2 {
+  height: auto;
+  width: auto;
+  background: transparent;
+  animation: opa 8s;
+}
+@keyframes opa {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+svg {
+  position: absolute;
+  display: inline-block;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  right: 50px;
+  top: 25px;
+  /* animation: cycle infinite 0.8s; */
+}
+
+.reload {
+  animation: cycle infinite 0.8s;
+}
+
+@keyframes cycle {
+  0% {
+    transform: rotateZ(0deg);
+  }
+  50% {
+    transform: rotateZ(180deg);
+  }
+  100% {
+    transform: rotateZ(360deg);
+  }
+}
 #data_show {
   border-radius: 7px;
   box-shadow: 4px 9px 12px rgb(53, 53, 53);
 }
-li.active {
+/* li.active {
   border-bottom: 1.9px solid blue;
   background-color: rgb(124, 153, 131);
   border-radius: 5px;
+} */
+.option-selector {
+  text-align: center;
+}
+h1 {
+  clear: both;
+  color: rgb(205, 211, 243);
+  text-shadow: 4px 2px 4px #424141;
+}
+.option-selector {
+  margin-top: 3%;
+}
+.download {
+  margin-left: 100px;
+  border: none;
+  height: 22px;
+  border-radius: 2px;
+  cursor: pointer;
+  box-shadow: 4px 3px 10px rgb(75, 75, 75);
+}
+.download:hover {
+  color: white;
+  background: rgb(92, 92, 92);
+}
+.download:focus {
+  outline: none;
+}
+@media only screen and (max-width: 1000px) {
+  .nav-bar {
+    width: 50%;
+    left: -500px;
+  }
+  .change {
+    left: 0;
+  }
+  .nav-list {
+    padding-left: 20px;
+  }
+  svg {
+    right: 16px;
+    height: 30px;
+    width: 30px;
+    top: 77px;
+  }
+  #data_show th,
+  td {
+    font-size: 15px;
+  }
+  .option-selector {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+  }
+  .option-selector * {
+    margin-bottom: 10px;
+  }
+  .download {
+    margin-left: 0;
+    width: fit-content;
+  }
+  /* .hamburger-menu {
+    left: 41px;
+  } */
 }

@@ -24,10 +24,7 @@ It gathers information from our own maintained database. Database data are colle
 
 ## What's new!!
 
-- Now user can up a server where user can see some main features of covdata package. In server user can see data with an interactive way.
-
-* User now can define own chosen port to which server will start.
-* Some problems on graph plot on server is fixed.
+- Some changes in covdata server.
 
 ## Up the server
 
@@ -42,8 +39,9 @@ It gathers information from our own maintained database. Database data are colle
      #Initialize the module to collect the data
      Init=initializer()
 
-     #shows the collected data in Dataframe format of Total Confimed data
-     Init.show_data(of='Total Confirmed')
+     #shows the collected data in Dataframe format of Total Confimed data as daily count basis. If daily is not mentioned cumulative data will be shown.
+
+     Init.show_data(of='Total Confirmed',daily=True)
 
      obj1=Data(init)       #defining the object for Data class
      cumData=obj1.get_cum_dataset_between_date('30/1/2020','5/4/2020',by='total recovered')   #gives the cumulative count between 30/1/2020 and 5/4/2020
@@ -61,6 +59,10 @@ It gathers information from our own maintained database. Database data are colle
 ## Examples
 
 Examples are in [github](https://github.com/kalyaniuniversity/covidindia) repository project folder.
+
+A website has been created that will show the required data of Covid-19 in india and some graphs are added.From that website each and every single data can de downloaded.
+
+See [covdataserver](https://covdata.pythonanywhere.com/)
 
 ## Terminal Usage
 
