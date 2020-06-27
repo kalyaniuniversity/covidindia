@@ -35,7 +35,7 @@ def main():
     parser.add_argument('--save', type=str,
                         help='save as csv to given path with file name(e.g.D:\path\where\to\filename.csv')
     parser.add_argument('-g', '--graph', type=str,
-                        help='shows different types graph', choices=['whole', 'head', 'tail', 'graph_by_date', 'latitude'])
+                        help='shows different types graph', choices=['whole', 'head', 'tail', 'graph_by_date'])
     parser.add_argument('-f', '--of', type=str,
                         help='process data for selected type', choices=['Total_Confirmed', 'Total_Death',
                                                                         'Total_Recovered'])
@@ -44,7 +44,7 @@ def main():
                                                                     'state_dataset', 'data_by_date',
                                                                     'count_by_date', 'rank', 'cumulative_between_date',
                                                                     'count_between_date',
-                                                                    'graph'])
+                                                                    'graph', 'district_data', 'tested_data'])
 
     subparsers = parser.add_subparsers(
         help='sub-command for cov-server', dest="command")
@@ -254,18 +254,34 @@ def main():
                         end = datetime.strftime(datetime.strptime(
                             confirmed.columns[-1], '%m/%d/%Y'), '%d/%m/%Y')
                         if args.daily == 'y':
-
-                            obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
-                                               title=f'Daily count graph for {obj3.code[args.state]}', daily=True)
+                            if args.of != None:
+                                obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
+                                                   title=f'{args.of.split("_")[1].lower()} Daily count graph for {obj3.code[args.state]}', daily=True, typeof=args.of.split('_')[1].lower())
+                            else:
+                                obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
+                                                   title=f'Daily count graph for {obj3.code[args.state]}', daily=True)
                         else:
-                            obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
-                                               title=f'Cumulative count graph for {obj3.code[args.state]}')
+                            if args.of != None:
+                                obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
+                                                   title=f'{args.of.split("_")[1].lower()} Cumulative count graph for {obj3.code[args.state]}', typeof=args.of.split('_')[1].lower())
+                            else:
+                                obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
+                                                   title=f'Cumulative count graph for {obj3.code[args.state]}')
                     else:
                         if args.daily == 'y':
-                            obj3.whole(
-                                daily=True, title=f'Daily graph for all dates')
+                            if args.of != None:
+                                obj3.whole(
+                                    daily=True, title=f'{args.of.split("_")[1].lower()} Daily graph for all dates', typeof=args.of.split('_')[1].lower())
+                            else:
+                                obj3.whole(
+                                    daily=True, title=f'Daily graph for all dates')
                         else:
-                            obj3.whole(title=f'Cumulative graph for all dates')
+                            if args.of != None:
+                                obj3.whole(title=f'{args.of.split("_")[1].lower()} Cumulative graph for all dates', typeof=args.of.split(
+                                    '_')[1].lower())
+                            else:
+                                obj3.whole(
+                                    title=f'Cumulative graph for all dates')
                 else:
                     print('Do not use -n flag for whole type of graph')
 
@@ -276,20 +292,35 @@ def main():
                         e = datetime.strftime(datetime.strptime(
                             s, '%d/%m/%Y')+timedelta(args.number), '%d/%m/%Y')
                         if args.daily == 'y':
-
-                            # obj3.head(num=args.rank,daily=True)
-                            obj3.graph_by_date(startDate=s, endDate=e, state=args.state, daily=True,
-                                               title=f'Daily graph of 1st {args.number} days of {obj3.code[args.state]}')
+                            if args.of != None:
+                                # obj3.head(num=args.rank,daily=True)
+                                obj3.graph_by_date(startDate=s, endDate=e, state=args.state, daily=True,
+                                                   title=f'{args.of.split("_")[1].lower()} Daily graph of 1st {args.number} days of {obj3.code[args.state]}', typeof=args.of.split('_')[1].lower())
+                            else:
+                                obj3.graph_by_date(startDate=s, endDate=e, state=args.state, daily=True,
+                                                   title=f'Daily graph of 1st {args.number} days of {obj3.code[args.state]}')
                         else:
-                            obj3.graph_by_date(startDate=s, endDate=e, state=args.state,
-                                               title=f'Cumulative graph of 1st {args.number} days of {obj3.code[args.state]}')
+                            if args.of != None:
+                                obj3.graph_by_date(startDate=s, endDate=e, state=args.state,
+                                                   title=f'{args.of.split("_")[1].lower()} Cumulative graph of 1st {args.number} days of {obj3.code[args.state]}', typeof=args.of.split('_')[1].lower())
+                            else:
+                                obj3.graph_by_date(startDate=s, endDate=e, state=args.state,
+                                                   title=f'Cumulative graph of 1st {args.number} days of {obj3.code[args.state]}')
                     else:
                         if args.daily == 'y':
-                            obj3.head(
-                                num=args.number, daily=True, title=f'Daily graph of 1st {args.number} days for all states')
+                            if args.of != None:
+                                obj3.head(
+                                    num=args.number, daily=True, title=f'{args.of.split("_")[1].lower()} Daily graph of 1st {args.number} days for all states', typeof=args.of.split('_')[1].lower())
+                            else:
+                                obj3.head(
+                                    num=args.number, daily=True, title=f'Daily graph of 1st {args.number} days for all states')
                         else:
-                            obj3.head(
-                                num=args.number, title=f'Cumulative graph of 1st {args.number} days for all states')
+                            if args.of != None:
+                                obj3.head(
+                                    num=args.number, title=f'{args.of.split("_")[1].lower()} Cumulative graph of 1st {args.number} days for all states', typeof=args.of.split('_')[1].lower())
+                            else:
+                                obj3.head(
+                                    num=args.number, title=f'Cumulative graph of 1st {args.number} days for all states')
                 else:
                     print('-n flag is required for head type graph')
 
@@ -302,20 +333,35 @@ def main():
                             d-timedelta(args.number), '%d/%m/%Y')
                         e = datetime.strftime(d, '%d/%m/%Y')
                         if args.daily == 'y':
-
-                            # obj3.head(num=args.rank,daily=True)
-                            obj3.graph_by_date(startDate=s, endDate=e, state=args.state, daily=True,
-                                               title=f'Daily graph of last {args.number} days of {obj3.code[args.state]}')
+                            if args.of != None:
+                                # obj3.head(num=args.rank,daily=True)
+                                obj3.graph_by_date(startDate=s, endDate=e, state=args.state, daily=True,
+                                                   title=f'{args.of.split("_")[1].lower()} Daily graph of last {args.number} days of {obj3.code[args.state]}', typeof=args.of.split('_')[1].lower())
+                            else:
+                                obj3.graph_by_date(startDate=s, endDate=e, state=args.state, daily=True,
+                                                   title=f'Daily graph of last {args.number} days of {obj3.code[args.state]}')
                         else:
-                            obj3.graph_by_date(startDate=s, endDate=e, state=args.state,
-                                               title=f'Cumulative graph of last {args.number} days of {obj3.code[args.state]}')
+                            if args.of != None:
+                                obj3.graph_by_date(startDate=s, endDate=e, state=args.state,
+                                                   title=f'{args.of.split("_")[1].lower()} Cumulative graph of last {args.number} days of {obj3.code[args.state]}', typeof=args.of.split('_')[1].lower())
+                            else:
+                                obj3.graph_by_date(startDate=s, endDate=e, state=args.state,
+                                                   title=f'Cumulative graph of last {args.number} days of {obj3.code[args.state]}')
                     else:
                         if args.daily == 'y':
-                            obj3.tail(num=args.number, daily=True,
-                                      title=f'Daily graph of last {args.number} days')
+                            if args.of != None:
+                                obj3.tail(num=args.number, daily=True,
+                                          title=f'{args.of.split("_")[1].lower()} Daily graph of last {args.number} days', typeof=args.of.split('_')[1].lower())
+                            else:
+                                obj3.tail(num=args.number, daily=True,
+                                          title=f'Daily graph of last {args.number} days')
                         else:
-                            obj3.tail(
-                                num=args.number, title=f'Cumulative graph of last {args.number} days')
+                            if args.of != None:
+                                obj3.tail(
+                                    num=args.number, title=f'{args.of.split("_")[1].lower()} Cumulative graph of last {args.number} days', typeof=args.of.split('_')[1].lower())
+                            else:
+                                obj3.tail(
+                                    num=args.number, title=f'Cumulative graph of last {args.number} days')
                 else:
                     print('-n flag is required for tail type graph')
 
@@ -327,22 +373,42 @@ def main():
                         if args.state != None:
 
                             if args.daily == 'y':
-                                obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
-                                                   title=f'Daily graph between {start} and {end} of {obj3.code[args.state]}',
-                                                   daily=True)
+                                if args.of != None:
+                                    obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
+                                                       title=f'{args.of.split("_")[1].lower()} Daily graph between {start} and {end} of {obj3.code[args.state]}',
+                                                       daily=True, typeof=args.of.split('_')[1].lower())
+                                else:
+                                    obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
+                                                       title=f'Daily graph between {start} and {end} of {obj3.code[args.state]}',
+                                                       daily=True)
                             else:
-                                obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
-                                                   title=f'Cumulative graph between {start} and {end} of {obj3.code[args.state]}',
-                                                   daily=False)
+                                if args.of != None:
+                                    obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
+                                                       title=f'{args.of.split("_")[1].lower()} Cumulative graph between {start} and {end} of {obj3.code[args.state]}',
+                                                       daily=False, typeof=args.of.split('_')[1].lower())
+                                else:
+                                    obj3.graph_by_date(startDate=start, endDate=end, state=args.state,
+                                                       title=f'Cumulative graph between {start} and {end} of {obj3.code[args.state]}',
+                                                       daily=False)
                         else:
                             if args.daily == 'y':
-                                obj3.graph_by_date(startDate=start, endDate=end,
-                                                   title=f'Daily graph between {start} and {end} of all states',
-                                                   daily=True)
+                                if args.of != None:
+                                    obj3.graph_by_date(startDate=start, endDate=end,
+                                                       title=f'{args.of.split("_")[1].lower()} Daily graph between {start} and {end} of all states',
+                                                       daily=True, typeof=args.of.split('_')[1].lower())
+                                else:
+                                    obj3.graph_by_date(startDate=start, endDate=end,
+                                                       title=f'Daily graph between {start} and {end} of all states',
+                                                       daily=True)
                             else:
-                                obj3.graph_by_date(startDate=start, endDate=end,
-                                                   title=f'Cumulative graph between {start} and {end} of all states',
-                                                   daily=False)
+                                if args.of != None:
+                                    obj3.graph_by_date(startDate=start, endDate=end,
+                                                       title=f'Cumulative graph between {start} and {end} of all states',
+                                                       daily=False, typeof=args.of.split('_')[1].lower())
+                                else:
+                                    obj3.graph_by_date(startDate=start, endDate=end,
+                                                       title=f'{args.of.split("_")[1].lower()} Cumulative graph between {start} and {end} of all states',
+                                                       daily=False)
                     else:
                         raise Exception('Two Dates must be separated by "-"')
 
@@ -401,6 +467,106 @@ def main():
                     print('Give to dates separated by "-" (eg. 05/02/2020-06/03/2020)')
             else:
                 print('-f flag should be given')
+
+        elif args.options == 'district_data':
+            obj2 = Data(init)
+            if args.date != None:
+                df = obj2.get_district_data_by_date(
+                    place=args.place, date=args.date)
+                if args.head != None:
+                    if args.save != None:
+                        df.head(args.head).to_csv(args.save)
+                    else:
+                        print(df.head(args.head))
+                elif args.tail != None:
+                    if args.save != None:
+                        df.tail(args.tail).to_csv(args.save)
+                    else:
+                        print(df.tail(args.tail))
+                else:
+                    if args.save != None:
+                        df.to_csv(args.save)
+                    else:
+                        print(df)
+            else:
+                df = obj2.get_district_data_by_date(place=args.place)
+                if args.head != None:
+                    if args.save != None:
+                        df.head(args.head).to_csv(args.save)
+                    else:
+                        print(df.head(args.head))
+                elif args.tail != None:
+                    if args.save != None:
+                        df.tail(args.tail).to_csv(args.save)
+                    else:
+                        print(df.tail(args.tail))
+                else:
+                    if args.save != None:
+                        df.to_csv(args.save)
+                    else:
+                        print(df)
+
+        elif args.options == 'tested_data':
+            obj2 = Data(init)
+            if args.state != None:
+                if args.date != None:
+                    df = obj2.tested_subject_data(
+                        date=args.date, state=args.state)
+                    if args.head != None:
+                        if args.save != None:
+                            df.head(args.head).to_csv(args.save)
+                        else:
+                            print(df.head(args.head))
+                    elif args.tail != None:
+                        if args.save != None:
+                            df.head(args.head).to_csv(args.save)
+                        else:
+                            print(df.head(args.head))
+                    else:
+                        print(df)
+                else:
+                    df = obj2.tested_subject_data(state=args.state)
+                    if args.head != None:
+                        if args.save != None:
+                            df.head(args.head).to_csv(args.save)
+                        else:
+                            print(df.head(args.head))
+                    elif args.tail != None:
+                        if args.save != None:
+                            df.head(args.head).to_csv(args.save)
+                        else:
+                            print(df.head(args.head))
+                    else:
+                        print(df)
+            else:
+                if args.date != None:
+                    df = obj2.tested_subject_data(date=args.date)
+                    if args.head != None:
+                        if args.save != None:
+                            df.head(args.head).to_csv(args.save)
+                        else:
+                            print(df.head(args.head))
+                    elif args.tail != None:
+                        if args.save != None:
+                            df.head(args.head).to_csv(args.save)
+                        else:
+                            print(df.head(args.head))
+                    else:
+                        print(df)
+                else:
+                    df = obj2.tested_subject_data()
+                    if args.head != None:
+                        if args.save != None:
+                            df.head(args.head).to_csv(args.save)
+                        else:
+                            print(df.head(args.head))
+                    elif args.tail != None:
+                        if args.save != None:
+                            df.head(args.head).to_csv(args.save)
+                        else:
+                            print(df.head(args.head))
+                    else:
+                        print(df)
 
     else:
         raise Exception(

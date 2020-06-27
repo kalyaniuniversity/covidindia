@@ -26,7 +26,11 @@ package name: CovidIndia
 # import the package
 
 # 1st initializer must be called
-from covdata.covidindia import *
+
+# Importing modules
+
+# initializer method should be called at the very begining.
+from covdata.covidindia import initializer, Demographic_overview, Data, visualizer
 instance_1 = initializer()
 
 # Shows the data that are collected
@@ -105,20 +109,27 @@ obj.demography('gaya', '10/3/2020-15/4/2020')
 # initialize the visualizer
 instance_3 = visualizer(instance_1)
 
-# visualize fast n days as cumulative or daily
+# visualize fast n days as cumulative or daily of confirmed/recovered/death
 # if daily is true it gives daily counts of 1st n days
 instance_3.head(num=15, daily=False, title='1st 15 cumulative plot')
 # by default daily  is false and does not set any title if title is not mentioned.
 instance_3.head(num=5)
 
-# visualize last n days as cumulative or daily
+# first 30 days on daily basis of West Bengal of recovery data
+instance_3.head(num=30, daily=True,
+                title='1st 30 daily plot of West Bengal', state='wb', typeof='recovered')
+
+
+# visualize last n days as cumulative or daily of confirmed/recovered/death
 # if daily is true it gives daily counts of last n days
-instance_3.tail(num=15, daily=True, title='last 15 daily count plot')
+instance_3.tail(num=15, daily=True, title='last 15 daily count plot',
+                state='mh')  # data for Maharashtra
 # by default daily  is false and does not set any title if title is not mentioned.
 instance_3.tail(num=15)
 
-# visualise the whole data as cumulative or daily
-instance_3.whole(daily=True, title='daily count plot for all states')
+# visualise the whole data as cumulative or daily of confirmed/recovered/death
+instance_3.whole(
+    daily=True, title='daily count plot for all states', typeof='recovered')
 instance_3.whole()  # by default daily  is false and does not set the title
 
 # visualize data between two dates as cumulative or daily
@@ -126,4 +137,11 @@ instance_3.graph_by_date('30/01/2020', '7/04/2020',
                          state='tg', daily=True, title='daily count plot between 30/1/2020 and 7/4/2020 of telengana')  # by default daily is False
 # if state is not mentioned by default it will graph all states together
 instance_3.graph_by_date('1/02/2020', '29/03/2020', daily=True,
-                         title='daily count plot between 1/2/2020 and 29/03/2020 for all states together')
+                         title='daily count plot between 1/2/2020 and 29/03/2020 for all states together', state='pb')  # for punjab
+
+# state parameter is available for graph methods.
+# if typeof parameter is not mentioned the multiple line plot of confirmed/recovered/death will be generated.
+# extdata is user's extra data that can be plotted along with covdi-19 data.
+
+# Suppose a list of random data is to be plotted with daily confirmed cases of WestBengal. Code for thsi will be:
+instance_3.whole(state='wb', typeof='confirmed', extdata={'<keyname>': < your_data_points_list > })

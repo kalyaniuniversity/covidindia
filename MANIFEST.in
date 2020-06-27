@@ -1,0 +1,2 @@
+include covdata/SERVER/templates/*
+include covdata/SERVER/static/*

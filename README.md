@@ -4,6 +4,7 @@
 [![PyPI](https://img.shields.io/pypi/v/covdata?label=PyPI)](https://pypi.org/project/covdata/)
 [![dataset](https://img.shields.io/badge/Covid--19-Dataset-yellowgreen)](https://github.com/kalyaniuniversity/COVID-19-Datasets)
 [![Analysis](https://img.shields.io/badge/Covid--19-Analysis-brightgreen)](https://debacharya.com/covid)
+[![Covidindia Server](https://img.shields.io/badge/Covid--19-Server-yellowgreen)](https://covdata.pythonanywhere.com/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/covdata)
 
 # covdata.covidindia Module
@@ -24,7 +25,10 @@ It gathers information from our own maintained database. Database data are colle
 
 ## What's new!!
 
-- Some changes in covdata server.
+- District wise data for each state with daily basis is available now.
+- Number of subject tested data for every state with daily basis is now availabe.
+- All types of graphs can be separately generated as confirmed,deceased or recovered. No more subplots will be generated.
+- With all graphs data new extra data can be pushed to generate multiple line graphs to track the any relevance information.This extra data must be a dictionary or list of dictionary where for each dictionary contains a list of data points with a suitable key name.This key name will the legend name of the garph.
 
 ## Up the server
 
@@ -34,7 +38,7 @@ It gathers information from our own maintained database. Database data are colle
 ## Usage
 
      #import module
-     from covdata.covidindia import *
+     from covdata.covidindia import initializer,Demographic_overview,Data,visualizer
 
      #Initialize the module to collect the data
      Init=initializer()
@@ -117,11 +121,16 @@ See [covdataserver](https://covdata.pythonanywhere.com/)
      #get daily count between two dates
      covdata -d 15/3/2020-30/3/2020 -f Total_Confirmed --options count_between_date   #Daily count data between 15/3/2020 and 30/3/2020
 
-     #graph of whole data
-     covdata -g whole -D y --options graph    #plot the whole data with dailly counts
+     #get daily count between two dates
+     covdata -d 15/3/2020-30/3/2020 -f Total_Confirmed --options count_between_date   #Daily count data between 15/3/2020 and 30/3/2020
 
+     #graph of whole data
+     covdata -g whole -D y -f Total_Confirmed --options graph    #plot the whole data with dailly counts of
+                                                                   confirmed data
+     (if -f flag is not mentioned combibed graph will be plotted)
      #graph whole data of any state
-     covdata -g whole -D y -s wb --options graph    #plots the daily graph of west bengal
+     covdata -g whole -D y -s wb -f Total_Recovered --options graph    #plots the daily graph of west bengal
+                                                                        of recovery data
 
      #graph of 1st n data of any selected state ,if state not mentioned all together state count will be shown
      covdata -g head -n 15 -D y -s wb --options graph   #plots 1st 15 days daily counts for west bengal
@@ -150,16 +159,16 @@ NAME
 covidindia - Created on Tue Mar 31 15:24:51 2020
 
 DESCRIPTION
-@author: Dripta Senapati
+@author: Dripta
 
 CLASSES
 builtins.object
-Demographic_overview
 initializer
 Data
+Demographic_overview
 visualizer
 
-     class Data(initializer)
+    class Data(initializer)
      |  Data(init)
      |
      |  # Data class can apply various filters on collected datasets(Confirmed,Recovered,Deceased)
@@ -287,13 +296,30 @@ visualizer
      |      -------
      |      df : DataFrame
      |          if state is whole and daily is Flase then it Returns a dataframe consisting all states having
-     |          cumulative count of totalconfirmed,total recovered,total death till the previous day of the day of using this package.
-     |          Otherwise for daily is True it will return dictionary of dataframes having confirmed,recovered and death cases for all states.
-     |          if state is mentioned and daily is true then it will return a dataframe consisting all dates showing daily confirmed,daily recovered and
      |          daily death.
      |
-     |          if state is mentioned and daily is False then a dataframe will be returned consisting of name of districts of that states along with only
      |          confirmed data.
+     |
+     |  get_district_data_by_date(self, place, date='All')
+     |      Gives the district wise data for a state or for a given district and any given date.
+     |
+     |      Parameters
+     |      ----------
+     |      place : character
+     |          name of a district or a state(state code also applicable)
+     |      date : character, optional
+     |          date format(dd/mm/yyyy) for which data will be retrieved. The default is 'All'.
+     |
+     |      Raises
+     |      ------
+     |      Exception
+     |          If place is wrong or maybe if data is not available for that place exception will be raised.
+     |          If date is wrong or if data is unavailable for that date exception will be raised.
+     |
+     |      Returns
+     |      -------
+     |      TYPE
+     |          Dataframe.
      |
      |  rank(self, num, by, kind='top', cumulative=False, date=None)
      |      Gives top n or bottom n values as cumulative or daily basis for a date or
@@ -330,10 +356,35 @@ visualizer
      |          whenever date is mentioned a dataframe will be returned consisting top/bottom cumulative count or
      |          daily count for that date.
      |
+     |  tested_subject_data(self, date=None, state=None)
+     |      Gives the data on the number of subjetcs are tested for corona infection
+     |      for different states with date.
+     |
+     |      Parameters
+     |      ----------
+     |      date : string, optional
+     |          date for which tests data will be displayed.Date may be a single date or range
+     |          of dates separated by "-"(dd/mm/yyyy).(e.g. "2/05/2020-7/05/2020").If date is not
+     |          mentioned data for all date will be shown. The default is None.
+     |      state : string, optional
+     |          For which state data will be shown.State may be a name or state code.If not mentioned
+     |          data for all states will be shown. The default is None.
+     |
+     |      Raises
+     |      ------
+     |      Exception
+     |          For wrong state and wrong date or if data is not found for a particular date exception
+     |          will be thrown.
+     |
+     |      Returns
+     |      -------
+     |      Dataframe
+     |          DataFrame having required data as mentioned by user.
+     |
      |  ----------------------------------------------------------------------
      |  Methods inherited from initializer:
      |
-     |  show_data(self, of)
+     |  show_data(self, of, daily=False)
      |      This method only assembles the collected data
      |
      |      Returns
@@ -395,7 +446,7 @@ visualizer
      |  ----------------------------------------------------------------------
      |  Methods inherited from initializer:
      |
-     |  show_data(self, of)
+     |  show_data(self, of, daily=False)
      |      This method only assembles the collected data
      |
      |      Returns
@@ -425,7 +476,7 @@ visualizer
      |      -------
      |      None.
      |
-     |  show_data(self, of)
+     |  show_data(self, of, daily=False)
      |      This method only assembles the collected data
      |
      |      Returns
@@ -464,83 +515,104 @@ visualizer
      |      -------
      |      None.
      |
-     |  graph_by_date(self, startDate, endDate, state=None, title=None, daily=False)
+     |  graph_by_date(self, startDate, endDate, typeof='together', state=None, title=None, daily=False, extdata=None)
      |      Gives the visualization of cumulative data or daily data between two given
      |      dates for a given state or as whole india.
      |
      |      Parameters
      |      ----------
-     |      title : Character, optional
-     |          Sets the title of the subplots. The default is None.
      |      startDate : character
      |          dd/mm/yyyy format(e.g 02/04/2020).
      |      endDate : character
      |          dd/mm/yyyy format(e.g 02/04/2020).
+     |      typeof : character, optional
+     |          the data options that are used to plot(confirmed/recovered/death). The default is 'together'.
+     |          set 'together' to generate multiple line chart.
      |      state : character, optional
-     |          for which state graph will be plotted.If None graph will be plotted for whole india. The default is None.
-     |          states input also takes state codes.
+     |          For which state plots will be generated.State code is also applicable. The default is None.
+     |          if None the total data for all states will be plotted.
+     |      title :  Character, optional
+     |          Sets the title of the subplots. The default is None.
      |      daily : bool, optional
-     |          if True graph will plotted daily basis. The default is False.
+     |          if True garph will be plotted on daily counts otherwise on cumulative counts. The default is False.
+     |      extdata : list or dict, optional
+     |          data that will also be plotted with that particular plot.For one data that should be
+     |          a dictionary containing a key and a list corresponding to that key.This key name is set as
+     |          legend name for that list.For more that one list extdata should be list of dict.The default is None.
      |
      |      Raises
      |      ------
      |      Exception
-     |          startdate must be less than enddate and if states are given wrong it will raise exception.
+     |          startdate must be less than enddate and if states are given wrong it will raise exception..
      |
      |      Returns
      |      -------
-     |      3 subplots consisting date vs total confirmed,date vs total recovered,date vs total deceased for a state or whole india
-     |      between two dates.
-     |      may be daily or cumulative based on daily parameter passed.
+     |      matplotlib chart.
      |
-     |  head(self, num, title=None, daily=False)
-     |      Gives graphical visualization of first n(=num) dayes based on daily or cumulative data
+     |  head(self, num, title=None, daily=False, typeof='together', state=None, extdata=None)
+     |      Generate plot for the first <no of days> for confirmed/recovered/death data
      |
      |      Parameters
      |      ----------
-     |      title : Character, optional
-     |          Sets the title of the subplots. The default is None.
      |      num : integer
-     |          setd the number of dates from start user wants to see.
+     |          Last Number of days that is to be plotted.
+     |      state : character, optional
+     |          For which state plots will be generated.State code is also applicable. The default is None.
+     |          if None the total data for all states will be plotted.
+     |      title : Character, optional
+     |          Sets the title of the subplots. The default is None.
      |      daily : bool, optional
-     |          if true graph is plotted based on daily data. The default is False.
+     |          if True garph will be plotted on daily counts otherwise on cumulative counts. The default is False.
+     |      typeof : character, optional
+     |          the data options that are used to plot(confirmed/recovered/death). The default is 'together'.
+     |          set 'together' to generate multiple line chart.
+     |      extdata : list or dict, optional
+     |          data that will also be plotted with that particular plot.For one data that should be
+     |          a dictionary containing a key and a list corresponding to that key.This key name is set as
+     |          legend name for that list.For more that one list extdata should be list of dict.The default is None.
+     |
+     |      Raises
+     |      ------
+     |      Exception
+     |          If states code is wrong,extdata is not a list / dict then error will be raised..
      |
      |      Returns
      |      -------
-     |      3 subplots consisting date vs total confirmed,date vs total recovered,date vs total deceased.
-     |      may be daily or cumulative based on daily parameter passed.
+     |      matplotlib chart.
      |
-     |  plot_by_latitude(self, title=None)
-     |      Gives the visualization of counts with respect to state latitudes
-     |
-     |      Parameters
-     |      ----------
-     |      title : Character, optional
-     |          Sets the title of the subplots. The default is None.
-     |
-     |      Returns
-     |      -------
-     |      3 subplots consisting latitude vs latitude confirmed,latitudes vs total recovered,latitudes vs total deceased.
-     |
-     |  tail(self, num, title=None, daily=False)
-     |      Gives graphical visualization of latest n(=num) dayes based on daily or cumulative data
+     |  tail(self, num, state=None, title=None, daily=False, typeof='together', extdata=None)
+     |      Generate a plot using last <no of days> confirmed/recovered/death data.
      |
      |      Parameters
      |      ----------
-     |      title : Character, optional
-     |          Sets the title of the subplots. The default is None.
      |      num : integer
-     |          setd the number of latest dates user wants to see.
+     |          Last Number of days that is to be plotted.
+     |      state : character, optional
+     |          For which state plots will be generated.State code is also applicable. The default is None.
+     |          if None the total data for all states will be plotted.
+     |      title : Character, optional
+     |          Sets the title of the subplots. The default is None.
      |      daily : bool, optional
-     |          if true graph is plotted based on daily data. The default is False.
+     |          if True garph will be plotted on daily counts otherwise on cumulative counts. The default is False.
+     |      typeof : character, optional
+     |          the data options that are used to plot(confirmed/recovered/death). The default is 'together'.
+     |          set 'together' to generate multiple line chart.
+     |      extdata : list or dict, optional
+     |          data that will also be plotted with that particular plot.For one data that should be
+     |          a dictionary containing a key and a list corresponding to that key.This key name is set as
+     |          legend name for that list.For more that one list extdata should be list of dict.The default is None.
+     |
+     |      Raises
+     |      ------
+     |      Exception
+     |          If states code is wrong,extdata is not a list / dict then error will be raised..
      |
      |      Returns
      |      -------
-     |      3 subplots consisting date vs total confirmed,date vs total recovered,date vs total deceased.
-     |      may be daily or cumulative based on daily parameter passed.
+     |      matplotlib chart.
      |
-     |  whole(self, title=None, daily=False)
-     |      Generate 3 subplots of whole collected data
+     |  whole(self, title=None, daily=False, typeof='together', state=None, extdata=None)
+     |      Generate a plot using all confirmed/recovered/death data till now.
      |
      |      Parameters
      |      ----------
@@ -548,19 +620,42 @@ visualizer
      |          Sets the title of the subplots. The default is None.
      |      daily : bool, optional
      |          if True garph will be plotted on daily counts otherwise on cumulative counts. The default is False.
+     |      typeof : character, optional
+     |          the data options that are used to plot(confirmed/recovered/death). The default is 'together'.
+     |          set 'together' to generate multiple line chart.
+     |      state : character, optional
+     |          For which state plots will be generated.State code is also applicable. The default is None.
+     |          if None the total data for all states will be plotted.
+     |      extdata : list or dict, optional
+     |          data that will also be plotted with that particular plot.For one data that should be
+     |          a dictionary containing a key and a list corresponding to that key.This key name is set as
+     |          legend name for that list.For more that one list extdata should be list of dict.The default is None.
+     |
+     |      Raises
+     |      ------
+     |      Exception
+     |          If states code is wrong,extdata is not a list / dict then error will be raised.
      |
      |      Returns
      |      -------
-     |      3 subplots consisting date vs total confirmed,date vs total recovered,date vs total deceased.
-     |      may be daily or cumulative based on daily parameter passed.
+     |      matplotlib chart.
      |
      |  ----------------------------------------------------------------------
      |  Methods inherited from initializer:
      |
-     |  show_data(self, of)
+     |  show_data(self, of, daily=False)
      |      This method only assembles the collected data
      |
      |      Returns
      |      -------
      |      list
      |          returns collected data as 3 dataframe format.
+     |
+     |  ----------------------------------------------------------------------
+     |  Data descriptors inherited from initializer:
+     |
+     |  __dict__
+     |      dictionary for instance variables (if defined)
+     |
+     |  __weakref__
+     |      list of weak references to the object (if defined)

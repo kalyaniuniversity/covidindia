@@ -650,7 +650,10 @@ class covserver():
                         l = j.split('-')
                         age_data['agebracket'][i] = (float(l[0])+float(l[1]))/2
                     else:
-                        age_data['agebracket'][i] = float(j)
+                        try:
+                            age_data['agebracket'][i] = float(j)
+                        except:
+                            age_data['agebracket'][i] = float(j.split(' ')[0])
                 age_bar_dict = {'age': [], 'count': []}
                 for i in np.arange(0, max(age_data['agebracket'])+1, 10):
                     age_bar_dict['age'].append(f'({i},{i+10})')
