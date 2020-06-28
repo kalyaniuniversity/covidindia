@@ -129,7 +129,7 @@ instance_3.tail(num=15)
 
 # visualise the whole data as cumulative or daily of confirmed/recovered/death
 instance_3.whole(
-    daily=True, title='daily count plot for all states', typeof='recovered')
+    daily=True, title='daily count plot for all states', typeof='recovered', xlabel='Date', ylabel='counts')  # user can set xlabel and ylabel for every graph
 instance_3.whole()  # by default daily  is false and does not set the title
 
 # visualize data between two dates as cumulative or daily
@@ -144,4 +144,4 @@ instance_3.graph_by_date('1/02/2020', '29/03/2020', daily=True,
 # extdata is user's extra data that can be plotted along with covdi-19 data.
 
 # Suppose a list of random data is to be plotted with daily confirmed cases of WestBengal. Code for thsi will be:
-instance_3.whole(state='wb', typeof='confirmed', extdata={'<keyname>': < your_data_points_list > })
+instance_3.whole(state='wb', typeof='confirmed', extdata={'<keyname>': < your_data_points_list >})

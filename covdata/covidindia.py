@@ -13,6 +13,9 @@ import urllib
 import json
 from .districtdata import districtwiseData
 import matplotlib as mpl
+import matplotlib.dates as mdates
+import matplotlib.ticker as ticker
+import math
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -871,7 +874,7 @@ class Data(initializer):
                     end=datetime.strptime(endDate,'%d/%m/%Y')
                     test_data['updatedon']=[datetime.strptime(i,'%d/%m/%Y') for i in test_data['updatedon']]
                     return_data=test_data[(test_data['updatedon'] >= start) & (test_data['updatedon'] <= end)]
-                    if return_data.empty == False:
+                    if return_data == False:
                         return return_data
                     else:
                         raise Exception(f'No data are available between {startDate} and {endDate}')
@@ -929,7 +932,7 @@ class visualizer(initializer):
         self.count_Death = pd.Series(
             self.count_death[self.count_death['STATE/UT'] == 'Total'].iloc[:, count_dict['1/30/2020']:].values[0])
 
-    def __graph(self, x, data,title=None, date=True,tag=None):
+    def __graph(self, x, data,title=None, date=True,tag=None,x_label=None,y_label=None):
         '''
         A private method used by visualizer class methods to generate graphs
 
@@ -987,12 +990,18 @@ class visualizer(initializer):
                 checklength=len(x)
                 for j in range(len(data)):
                     if len(list(data[j].values())[0])==checklength:
-                        ax.plot(x, list(data[j].values())[0], marker='*', color=f'C{j}',label=f'{list(data[j].keys())[0]}')
+                        ax.plot([datetime.strptime(i,'%m/%d/%Y') for i in x], list(data[j].values())[0], marker='*', color=f'C{j}',label=f'{list(data[j].keys())[0]}')
                     else:
                         raise Exception(f'Data mismatch error occured. expected {checklength} but got {len(list(data[j].values())[0])}')
                 if df_max != 0:
                     ax.yaxis.set_ticks(np.arange(0, df_max, df_max/10))
-                ax.set_xlabel('Dates', labelpad=20)
+                if x_label != None:
+                    ax.set_xlabel(f'{x_label}', labelpad=20)
+                if y_label != None:
+                    ax.set_ylabel(f'{y_label}', labelpad=20)
+                if len(x) >=50:
+                    ax.xaxis.set_major_locator(ticker.MultipleLocator(math.floor(len(x)/25)))
+                ax.xaxis.set_major_formatter(mdates.DateFormatter("%d %b %Y"))
                 fig.autofmt_xdate()
                 if title != None:
                     fig.suptitle(title, fontsize=25)
@@ -1001,14 +1010,21 @@ class visualizer(initializer):
             plt.show()
             
         else:
-            ax.plot(x, data, marker='*', color='red')
+            ax.plot([datetime.strptime(i,'%m/%d/%Y') for i in x], data, marker='*', color='red')
             ax.set_xlabel('Dates', labelpad=20)
             if title != None:
                 fig.suptitle(title, fontsize=25)
+            if x_label != None:
+                ax.set_xlabel(f'{x_label}', labelpad=20)
+            if y_label != None:
+                ax.set_ylabel(f'{y_label}', labelpad=20)
+            if len(x) >=50:
+                ax.xaxis.set_major_locator(ticker.MultipleLocator(math.floor(len(x)/25)))
+            ax.xaxis.set_major_formatter(mdates.DateFormatter("%d %b %Y"))
             fig.autofmt_xdate()
             plt.show()
 
-    def whole(self, title=None,daily=False,typeof='together',state=None,extdata=None):
+    def whole(self, title=None,daily=False,typeof='together',state=None,extdata=None,xlabel=None,ylabel=None):
         '''
         Generate a plot using all confirmed/recovered/death data till now.
 
@@ -1054,9 +1070,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(self.date, data,title=title)
+                        self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                        self.__graph(self.date, data,title=title)
+                        self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                 else:
                     data=[{'Confirmed':self.confirmed}, {'Recovered':self.recovered}, {'Death':self.death}]
                     if extdata != None:
@@ -1070,9 +1086,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(self.date, data,title=title)
+                        self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                        self.__graph(self.date, data,title=title)
+                        self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
             elif typeof == 'confirmed':
                 if daily == True:
                     data=[{'Confirmed':self.count_confirmed}]
@@ -1087,9 +1103,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(self.date, data,title=title)
+                        self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                        self.__graph(self.date,self.count_confirmed,title=title,tag='single')    
+                        self.__graph(self.date,self.count_confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)    
                 else:
                     data=[{'Confirmed':self.confirmed}]
                     if extdata != None:
@@ -1103,9 +1119,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(self.date, data,title=title)
+                        self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                        self.__graph(self.date,self.confirmed,title=title,tag='single')
+                        self.__graph(self.date,self.confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)
             elif typeof == 'recovered':
                 if daily == True:
                     data=[{'Recovered':self.count_recovered}]
@@ -1120,9 +1136,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(self.date, data,title=title)
+                        self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(self.date,self.count_recovered,title=title,tag='single')    
+                       self.__graph(self.date,self.count_recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)    
                 else:
                     data=[{'Recovered':self.count_recovered}]
                     if extdata != None:
@@ -1136,9 +1152,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(self.date, data,title=title)
+                        self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(self.date,self.recovered,title=title,tag='single') 
+                       self.__graph(self.date,self.recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel) 
             elif typeof == 'death':
                 if daily == True:
                     data=[{'Death':self.count_Death}]
@@ -1153,9 +1169,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(self.date, data,title=title)
+                        self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(self.date,self.count_Death,title=title,tag='single') 
+                       self.__graph(self.date,self.count_Death,title=title,tag='single',x_label=xlabel,y_label=ylabel) 
                 else:
                     data=[{'Death':self.death}]
                     if extdata != None:
@@ -1169,9 +1185,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(self.date, data,title=title)
+                        self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(self.date,self.death,title=title,tag='single')
+                       self.__graph(self.date,self.death,title=title,tag='single',x_label=xlabel,y_label=ylabel)
                     
         else:
             try:
@@ -1206,9 +1222,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(self.date, data,title=title)
+                            self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data,title=title)    
+                           self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                     elif typeof=='confirmed':
                         data=[{'Confirmed':confirmed}]
                         if extdata != None:
@@ -1222,9 +1238,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(self.date, data,title=title)
+                            self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=confirmed,title=title,tag='single')     
+                           self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                     elif typeof == 'recovered':
                         data=[{'Recovered':recovered}]
                         if extdata != None:
@@ -1238,9 +1254,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(self.date, data,title=title)
+                            self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=recovered,title=title,tag='single')  
+                           self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                     elif typeof == 'death':
                         data=[{'Death':death}]
                         if extdata != None:
@@ -1254,9 +1270,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(self.date, data,title=title)
+                            self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date,data=death,title=title,tag = 'single')        
+                           self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)        
                 else:
                     date = self.date
                     confirmed = pd.Series(self.csv_Confirmed[self.csv_Confirmed['STATE/UT']==state].iloc[:,7:].values[0])
@@ -1275,9 +1291,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(self.date, data,title=title)
+                            self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data,title=title)    
+                           self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                     elif typeof=='confirmed':
                         data=[{'Confirmed':confirmed}]
                         if extdata != None:
@@ -1291,9 +1307,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(self.date, data,title=title)
+                            self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=confirmed,title=title,tag='single')     
+                           self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                     elif typeof == 'recovered':
                         data=[{'Recovered':recovered}]
                         if extdata != None:
@@ -1307,9 +1323,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(self.date, data,title=title)
+                            self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=recovered,title=title,tag='single')  
+                           self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                     elif typeof == 'death':
                         data=[{'Death':death}]
                         if extdata != None:
@@ -1323,13 +1339,13 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(self.date, data,title=title)
+                            self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date,data=death,title=title,tag = 'single')
+                           self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)
             except:
                 raise Exception(f'No such state or state code {state}')
 
-    def tail(self, num,state=None, title=None,daily=False,typeof='together',extdata=None):
+    def tail(self, num,state=None, title=None,daily=False,typeof='together',extdata=None,xlabel=None,ylabel=None):
         '''
         Generate a plot using last <no of days> confirmed/recovered/death data.
 
@@ -1381,9 +1397,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date, data,title=title)    
+                       self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                 elif typeof=='confirmed':
                     data=[{'Confirmed':confirmed}]
                     if extdata != None:
@@ -1397,9 +1413,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date, data=confirmed,title=title,tag='single')     
+                       self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                 elif typeof == 'recovered':
                     data=[{'Recovered':recovered}]
                     if extdata != None:
@@ -1413,9 +1429,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date, data=recovered,title=title,tag='single')  
+                       self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                 elif typeof == 'death':
                     data=[{'Death':death}]
                     if extdata != None:
@@ -1429,9 +1445,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date,data=death,title=title,tag = 'single')
+                       self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)
             else:
                 date = self.date[len(self.date)-num:]
                 confirmed = self.confirmed[len(self.confirmed)-num:]
@@ -1450,9 +1466,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date, data,title=title)    
+                       self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                 elif typeof=='confirmed':
                     data=[{'Confirmed':confirmed}]
                     if extdata != None:
@@ -1466,9 +1482,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date, data=confirmed,title=title,tag='single')     
+                       self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                 elif typeof == 'recovered':
                     data=[{'Recovered':recovered}]
                     if extdata != None:
@@ -1482,9 +1498,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date, data=recovered,title=title,tag='single')  
+                       self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                 elif typeof == 'death':
                     data=[{'Death':death}]
                     if extdata != None:
@@ -1498,9 +1514,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date,data=death,title=title,tag = 'single')
+                       self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)
         else:
             try:
                 try:
@@ -1534,9 +1550,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data,title=title)    
+                           self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                     elif typeof=='confirmed':
                         data=[{'Confirmed':confirmed}]
                         if extdata != None:
@@ -1550,9 +1566,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=confirmed,title=title,tag='single')     
+                           self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                     elif typeof == 'recovered':
                         data=[{'Recovered':recovered}]
                         if extdata != None:
@@ -1566,9 +1582,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=recovered,title=title,tag='single')  
+                           self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                     elif typeof == 'death':
                         data=[{'Death':death}]
                         if extdata != None:
@@ -1582,9 +1598,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date,data=death,title=title,tag = 'single')
+                           self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)
                 else:
                     date = self.date[len(self.date)-num:]
                     confirmed = pd.Series(self.csv_Confirmed[self.csv_Confirmed['STATE/UT']==state].iloc[:,self.csv_Confirmed.shape[1]-num:].values[0])
@@ -1603,9 +1619,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data,title=title)    
+                           self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                     elif typeof=='confirmed':
                         data=[{'Confirmed':confirmed}]
                         if extdata != None:
@@ -1619,9 +1635,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=confirmed,title=title,tag='single')     
+                           self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                     elif typeof == 'recovered':
                         data=[{'Recovered':recovered}]
                         if extdata != None:
@@ -1635,9 +1651,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=recovered,title=title,tag='single')  
+                           self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                     elif typeof == 'death':
                         data=[{'Death':death}]
                         if extdata != None:
@@ -1651,14 +1667,14 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date,data=death,title=title,tag = 'single')
+                           self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)
             except:
                 raise Exception(f'No such state or state code {state}')
             
 
-    def head(self, num, title=None,daily=False,typeof='together',state=None,extdata=None):
+    def head(self, num, title=None,daily=False,typeof='together',state=None,extdata=None,xlabel=None,ylabel=None):
         '''
         Generate plot for the first <no of days> for confirmed/recovered/death data        
 
@@ -1710,9 +1726,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date, data,title=title)    
+                       self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                 elif typeof=='confirmed':
                     data=[{'Confirmed':confirmed}]
                     if extdata != None:
@@ -1726,9 +1742,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date, data=confirmed,title=title,tag='single')     
+                       self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                 elif typeof == 'recovered':
                     data=[{'Recovered':recovered}]
                     if extdata != None:
@@ -1742,9 +1758,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date, data=recovered,title=title,tag='single')  
+                       self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                 elif typeof == 'death':
                     data=[{'Death':death}]
                     if extdata != None:
@@ -1758,9 +1774,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(self.date, data,title=title)
+                        self.__graph(self.date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date,data=death,title=title,tag = 'single')
+                       self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)
             else:
                 date = self.date[:num]
                 confirmed = self.confirmed[:num]
@@ -1779,9 +1795,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date, data,title=title)    
+                       self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                 elif typeof=='confirmed':
                     data=[{'Confirmed':confirmed}]
                     if extdata != None:
@@ -1795,9 +1811,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date, data=confirmed,title=title,tag='single')     
+                       self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                 elif typeof == 'recovered':
                     data=[{'Recovered':recovered}]
                     if extdata != None:
@@ -1811,9 +1827,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date, data=recovered,title=title,tag='single')  
+                       self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                 elif typeof == 'death':
                     data=[{'Death':death}]
                     if extdata != None:
@@ -1827,9 +1843,9 @@ class visualizer(initializer):
                             data.append(extdata)
                         else:
                             raise Exception('extdata datatype should be a Dictionay')
-                        self.__graph(date, data,title=title)
+                        self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                     else:
-                       self.__graph(date,data=death,title=title,tag = 'single')
+                       self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)
         else:
             try:
                 try:
@@ -1863,9 +1879,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data,title=title)    
+                           self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                     elif typeof=='confirmed':
                         data=[{'Confirmed':confirmed}]
                         if extdata != None:
@@ -1879,9 +1895,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=confirmed,title=title,tag='single')     
+                           self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                     elif typeof == 'recovered':
                         data=[{'Recovered':recovered}]
                         if extdata != None:
@@ -1895,9 +1911,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=recovered,title=title,tag='single')  
+                           self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                     elif typeof == 'death':
                         data=[{'Death':death}]
                         if extdata != None:
@@ -1911,9 +1927,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date,data=death,title=title,tag = 'single')
+                           self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)
                 else:
                     date = self.date[:num]
                     confirmed = pd.Series(self.csv_Confirmed[self.csv_Confirmed['STATE/UT']==state].iloc[:,7:num+7].values[0])
@@ -1932,9 +1948,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data,title=title)    
+                           self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                     elif typeof=='confirmed':
                         data=[{'Confirmed':confirmed}]
                         if extdata != None:
@@ -1948,9 +1964,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=confirmed,title=title,tag='single')     
+                           self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                     elif typeof == 'recovered':
                         data=[{'Recovered':recovered}]
                         if extdata != None:
@@ -1964,9 +1980,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=recovered,title=title,tag='single')  
+                           self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                     elif typeof == 'death':
                         data=[{'Death':death}]
                         if extdata != None:
@@ -1980,13 +1996,13 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date,data=death,title=title,tag = 'single')
+                           self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)
             except:
                 raise Exception(f'No such state or state code {state}')
 
-    def graph_by_date(self, startDate, endDate, typeof='together',state=None,title=None, daily=False,extdata=None):
+    def graph_by_date(self, startDate, endDate, typeof='together',state=None,title=None, daily=False,extdata=None,xlabel=None,ylabel=None):
         '''
         Gives the visualization of cumulative data or daily data between two given
         dates for a given state or as whole india.
@@ -2063,9 +2079,9 @@ class visualizer(initializer):
                                     data.append(extdata)
                                 else:
                                     raise Exception('extdata datatype should be a Dictionay')
-                                self.__graph(date, data,title=title)
+                                self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                             else:
-                               self.__graph(date, data,title=title)    
+                               self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                         elif typeof=='confirmed':
                             data=[{'Confirmed':confirmed}]
                             if extdata != None:
@@ -2079,9 +2095,9 @@ class visualizer(initializer):
                                     data.append(extdata)
                                 else:
                                     raise Exception('extdata datatype should be a Dictionay')
-                                self.__graph(date, data,title=title)
+                                self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                             else:
-                               self.__graph(date, data=confirmed,title=title,tag='single')     
+                               self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                         elif typeof == 'recovered':
                             data=[{'Recovered':recovered}]
                             if extdata != None:
@@ -2095,9 +2111,9 @@ class visualizer(initializer):
                                     data.append(extdata)
                                 else:
                                     raise Exception('extdata datatype should be a Dictionay')
-                                self.__graph(date, data,title=title)
+                                self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                             else:
-                               self.__graph(date, data=recovered,title=title,tag='single')  
+                               self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                         elif typeof == 'death':
                             data=[{'Death':death}]
                             if extdata != None:
@@ -2111,9 +2127,9 @@ class visualizer(initializer):
                                     data.append(extdata)
                                 else:
                                     raise Exception('extdata datatype should be a Dictionay')
-                                self.__graph(date, data,title=title)
+                                self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                             else:
-                               self.__graph(date,data=death,title=title,tag = 'single')
+                               self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)
                     else:
                         date = self.date[self.date[self.date == start].index[0]:self.date[self.date == end].index[0]+1]
                         confirmed = pd.Series(self.count_conf[self.count_conf['STATE/UT'] == state].iloc[:, count_dict[start]:count_dict[end]+1].values[0])
@@ -2132,9 +2148,9 @@ class visualizer(initializer):
                                     data.append(extdata)
                                 else:
                                     raise Exception('extdata datatype should be a Dictionay')
-                                self.__graph(date, data,title=title)
+                                self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                             else:
-                               self.__graph(date, data,title=title)    
+                               self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                         elif typeof=='confirmed':
                             data=[{'Confirmed':confirmed}]
                             if extdata != None:
@@ -2148,9 +2164,9 @@ class visualizer(initializer):
                                     data.append(extdata)
                                 else:
                                     raise Exception('extdata datatype should be a Dictionay')
-                                self.__graph(date, data,title=title)
+                                self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                             else:
-                               self.__graph(date, data=confirmed,title=title,tag='single')     
+                               self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                         elif typeof == 'recovered':
                             data=[{'Recovered':recovered}]
                             if extdata != None:
@@ -2164,9 +2180,9 @@ class visualizer(initializer):
                                     data.append(extdata)
                                 else:
                                     raise Exception('extdata datatype should be a Dictionay')
-                                self.__graph(date, data,title=title)
+                                self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                             else:
-                               self.__graph(date, data=recovered,title=title,tag='single')  
+                               self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                         elif typeof == 'death':
                             data=[{'Death':death}]
                             if extdata != None:
@@ -2180,9 +2196,9 @@ class visualizer(initializer):
                                     data.append(extdata)
                                 else:
                                     raise Exception('extdata datatype should be a Dictionay')
-                                self.__graph(date, data,title=title)
+                                self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                             else:
-                               self.__graph(date,data=death,title=title,tag = 'single')
+                               self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)
                 except:
                     raise Exception('No such state or state code')
             else:
@@ -2207,9 +2223,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data,title=title)    
+                           self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                     elif typeof=='confirmed':
                         data=[{'Confirmed':confirmed}]
                         if extdata != None:
@@ -2223,9 +2239,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=confirmed,title=title,tag='single')     
+                           self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                     elif typeof == 'recovered':
                         data=[{'Recovered':recovered}]
                         if extdata != None:
@@ -2239,9 +2255,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=recovered,title=title,tag='single')  
+                           self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                     elif typeof == 'death':
                         data=[{'Death':death}]
                         if extdata != None:
@@ -2255,9 +2271,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date,data=death,title=title,tag = 'single')
+                           self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)
                 else:
 
                     date = self.date[self.date[self.date == start].index[0]                                     :self.date[self.date == end].index[0]+1]
@@ -2280,9 +2296,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data,title=title)    
+                           self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)    
                     elif typeof=='confirmed':
                         data=[{'Confirmed':confirmed}]
                         if extdata != None:
@@ -2296,9 +2312,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=confirmed,title=title,tag='single')     
+                           self.__graph(date, data=confirmed,title=title,tag='single',x_label=xlabel,y_label=ylabel)     
                     elif typeof == 'recovered':
                         data=[{'Recovered':recovered}]
                         if extdata != None:
@@ -2312,9 +2328,9 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date, data=recovered,title=title,tag='single')  
+                           self.__graph(date, data=recovered,title=title,tag='single',x_label=xlabel,y_label=ylabel)  
                     elif typeof == 'death':
                         data=[{'Death':death}]
                         if extdata != None:
@@ -2328,8 +2344,8 @@ class visualizer(initializer):
                                 data.append(extdata)
                             else:
                                 raise Exception('extdata datatype should be a Dictionay')
-                            self.__graph(date, data,title=title)
+                            self.__graph(date, data,title=title,x_label=xlabel,y_label=ylabel)
                         else:
-                           self.__graph(date,data=death,title=title,tag = 'single')
+                           self.__graph(date,data=death,title=title,tag = 'single',x_label=xlabel,y_label=ylabel)
         else:
             raise Exception('Startdate should be less than Enddate')
