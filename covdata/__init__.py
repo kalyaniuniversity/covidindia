@@ -1,4 +1,4 @@
-__version__ = '1.2.1'
+__version__ = '1.2.2'
 __classdict__ = {'initializer': ['show_data'],
                  'Demographic_overview': ['demography'],
                  'Data': ['get_dataset_state', 'get_dataset_by_date', 'get_cum_dataset_between_date',

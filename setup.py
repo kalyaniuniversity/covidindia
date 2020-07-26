@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="covdata",
-    version="1.2.1",
+    version="1.2.2",
     author="Dripta senapati",
     author_email="driptasenapati97@gmail.com",
     description="A package that can grab all data of Covid-19 cases in India",

@@ -471,8 +471,12 @@ def main():
         elif args.options == 'district_data':
             obj2 = Data(init)
             if args.date != None:
-                df = obj2.get_district_data_by_date(
-                    place=args.place, date=args.date)
+                if args.daily != 'y':
+                    df = obj2.get_district_data_by_date(
+                        place=args.place, date=args.date)
+                else:
+                    df = obj2.get_district_data_by_date(
+                        place=args.place, date=args.date, daily=True)
                 if args.head != None:
                     if args.save != None:
                         df.head(args.head).to_csv(args.save)
@@ -489,7 +493,11 @@ def main():
                     else:
                         print(df)
             else:
-                df = obj2.get_district_data_by_date(place=args.place)
+                if args.daily != 'y':
+                    df = obj2.get_district_data_by_date(place=args.place)
+                else:
+                    df = obj2.get_district_data_by_date(
+                        place=args.place, daily=True)
                 if args.head != None:
                     if args.save != None:
                         df.head(args.head).to_csv(args.save)
