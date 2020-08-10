@@ -68,6 +68,11 @@ A website has been created that will show the required data of Covid-19 in india
 
 See [covdataserver](https://covdata.pythonanywhere.com/)
 
+
+## Documentation
+
+All methods are described under [wiki](https://github.com/kalyaniuniversity/covidindia/wiki) page.
+
 ## Terminal Usage
 
      #get help
